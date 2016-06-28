@@ -333,7 +333,7 @@ data_source_amiga_t::load(const std::string &path) {
 
 sprite_t *
 data_source_amiga_t::get_sprite(data_res_class_t res, unsigned int index,
-                                int /*color_off*/) {
+                                int color_off) {
   sprite_t *sprite = NULL;
   switch (res) {
     case data_res_art_landscape:
@@ -380,13 +380,13 @@ data_source_amiga_t::get_sprite(data_res_class_t res, unsigned int index,
       break;
     case data_res_map_ground: {
       sprite_amiga_t *s = NULL;
-//      if (index == 32) {
-//        s = new sprite_amiga_t(32, 21);
-//        color_t c = {0xBB, 0x00, 0x00, 0xFF};
-//        s->fill(c);
-//      } else {
+      if (index == 32) {
+        s = new sprite_amiga_t(32, 21);
+        color_t c = {0xBB, 0x00, 0x00, 0xFF};
+        s->fill(c);
+      } else {
         s = get_ground_sprite(index);
-//      }
+      }
       sprite = s;
       break;
     }
@@ -464,7 +464,14 @@ data_source_amiga_t::get_sprite(data_res_class_t res, unsigned int index,
     case data_res_font: {
       uint8_t *data = reinterpret_cast<uint8_t*>(data_pointers[14]);
       data += index * 8;
-      sprite = decode_mask_sprite(data, 8, 8);
+      sprite_amiga_t *s = decode_mask_sprite(data, 8, 8);
+      color_t color;
+      color.red = palette[color_off*3];
+      color.green = palette[color_off*3+1];
+      color.blue = palette[color_off*3+2];
+      color.alpha = 0xFF;
+      s->fill_masked(color);
+      sprite = s;
       break;
     }
     case data_res_font_shadow:
@@ -824,8 +831,8 @@ data_source_amiga_t::get_icon_sprite(unsigned int index) {
   return decode_planned_sprite(data, header.width, header.height,
                                header.compression, header.filling, palette);
 }
-
-unsigned int
+/*
+static unsigned int
 calc_plaines_count(uint8_t filled) {
   unsigned int count = 0;
 
@@ -838,8 +845,8 @@ calc_plaines_count(uint8_t filled) {
 
   return count;
 }
-
-void
+*/
+static void
 calc_compression_filling(uint16_t compression, uint8_t *compressed,
                          uint8_t *filled) {
   *compressed = 0;
@@ -859,7 +866,8 @@ calc_compression_filling(uint16_t compression, uint8_t *compressed,
   }
 }
 
-uint8_t invert5bit(uint8_t src) {
+static uint8_t
+invert5bit(uint8_t src) {
   uint8_t res = 0;
 
   for (int i = 0; i < 5; i++) {
@@ -1505,6 +1513,17 @@ sprite_amiga_t::fill(color_t color) {
   color_t *c = get_writable_data();
   for (unsigned int i = 0; i < (width * height); i++) {
     *c++ = color;
+  }
+}
+
+void
+sprite_amiga_t::fill_masked(color_t color) {
+  color_t *c = get_writable_data();
+  for (unsigned int i = 0; i < (width * height); i++) {
+    color_t *cc = c++;
+    if (cc->alpha != 0x00) {
+      *cc = color;
+    }
   }
 }
 

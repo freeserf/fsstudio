@@ -39,7 +39,8 @@ SOURCES += src/main.cpp\
     src/resourcemodel.cpp \
     src/resourceview.cpp \
     src/sourcesview.cpp \
-    src/paletteview.cpp
+    src/paletteview.cpp \
+    src/spriteview.cpp
 
 HEADERS  += src/mainwindow.h \
     freeserf/src/data-source-amiga.h \
@@ -54,7 +55,8 @@ HEADERS  += src/mainwindow.h \
     src/resourcemodel.h \
     src/resourceview.h \
     src/sourcesview.h \
-    src/paletteview.h
+    src/paletteview.h \
+    src/spriteview.h
 
 INCLUDEPATH += .
 INCLUDEPATH += freeserf

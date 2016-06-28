@@ -21,39 +21,148 @@
 
 #include "src/paletteview.h"
 
-#include <QPainter>
-#include <QPaintEvent>
-#include <QRegion>
 #include <QFontDatabase>
+#include <QClipboard>
+#include <QApplication>
 
-#define DEF_WIDTH (200)
-
-FSSPaletteView::FSSPaletteView(QWidget *pParent) : QWidget(pParent) {
+FSSPaletteModel::FSSPaletteModel(QObject *parent) : QAbstractItemModel(parent) {
   palette = NULL;
-  row_height = 15;
+}
+
+QVariant
+FSSPaletteModel::headerData(int section, Qt::Orientation orientation, int role) const {
+  QVariant result = QVariant();
+
+  switch (role) {
+    case Qt::DisplayRole: {
+      if (orientation == Qt::Horizontal) {
+        if (section < 4) {
+          QString header[4] = {"R", "G", "B", "   COLOR   "};
+          result = QVariant(header[section]);
+        }
+      } else {
+        QString str = QString::number(section);
+        result = QVariant(str);
+      }
+      break;
+    }
+    default: break;
+  }
+
+  return result;
+}
+
+// Basic functionality:
+QModelIndex
+FSSPaletteModel::index(int row, int column, const QModelIndex &parent) const {
+  if (!parent.isValid()) {
+    return createIndex(row, column);
+  }
+  return QModelIndex();
+}
+
+QModelIndex
+FSSPaletteModel::parent(const QModelIndex &) const {
+  return QModelIndex();
+}
+
+int
+FSSPaletteModel::rowCount(const QModelIndex &parent) const {
+  if (!parent.isValid() && palette != NULL) {
+    return palette->get_size();
+  }
+  return 0;
+}
+
+int
+FSSPaletteModel::columnCount(const QModelIndex &parent) const {
+  if (!parent.isValid()) {
+    return 4;
+  }
+  return 0;
+}
+
+QVariant
+FSSPaletteModel::data(const QModelIndex &index, int role) const {
+  QVariant data;
+  switch (role) {
+    case Qt::DisplayRole:
+      if (index.column() < 3) {
+        color_t color = palette->get_color(index.row());
+        QString text;
+        switch (index.column()) {
+          case 0:
+            text.sprintf("0x%02x", color.red);
+            break;
+          case 1:
+            text.sprintf("0x%02x", color.green);
+            break;
+          case 2:
+            text.sprintf("0x%02x", color.blue);
+            break;
+        }
+        data = text;
+      }
+      break;
+    case Qt::BackgroundColorRole:
+      if (index.column() == 3) {
+        color_t color = palette->get_color(index.row());
+        data = QVariant(QColor(color.red, color.green, color.blue));
+      }
+      break;
+  }
+
+  return data;
 }
 
 void
-FSSPaletteView::setPalette(palette_t *palette) {
-  if (this->palette != NULL) {
-    delete this->palette;
-    this->palette = NULL;
+FSSPaletteModel::setPalette(palette_t *_palette) {
+  beginResetModel();
+  palette = _palette;
+  endResetModel();
+}
+
+FSSPaletteView::FSSPaletteView(QWidget *pParent) : QTableView(pParent) {
+  palette = NULL;
+
+  const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+  setFont(font);
+
+  model = new FSSPaletteModel(this);
+  setModel(model);
+
+  setSelectionBehavior(QAbstractItemView::SelectRows);
+
+  connect(this, &QTableView::doubleClicked,
+          this, &FSSPaletteView::on_copy_color);
+}
+
+void
+FSSPaletteView::setPalette(palette_t *_palette) {
+  if (palette != NULL) {
+    delete palette;
+    palette = NULL;
   }
 
-  this->palette = palette;
+  palette = _palette;
 
+  model->setPalette(palette);
+  resizeColumnsToContents();
   update();
 }
 
-QSize
-FSSPaletteView::sizeHint() const {
-  if (palette == NULL) {
-    return QSize();
+void
+FSSPaletteView::on_copy_color(const QModelIndex &index) {
+  if (palette != NULL) {
+    color_t color = palette->get_color(index.row());
+    QString text;
+    text.sprintf("0x%02x, 0x%02x, 0x%02x", color.red, color.green, color.blue);
+    QClipboard *clipboard = QApplication::clipboard();
+    clipboard->setText(text);
   }
-
-  return QSize(DEF_WIDTH, palette->get_size() * row_height);
 }
 
+/*
 void
 FSSPaletteView::paintEvent(QPaintEvent *event) {
   if (palette == NULL) {
@@ -84,3 +193,4 @@ FSSPaletteView::paintEvent(QPaintEvent *event) {
     }
   }
 }
+*/

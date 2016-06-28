@@ -1,5 +1,5 @@
 /*
- * resourceview.h - FVResourceView declaration
+ * spriteview.h - FSSSpriteView declaration
  *
  * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
  *
@@ -19,39 +19,29 @@
  * along with FSStudio.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_RESOURCEVIEW_H_
-#define SRC_RESOURCEVIEW_H_
+#ifndef SRC_SPRITEVIEW_H_
+#define SRC_SPRITEVIEW_H_
 
-#include <QWidget>
+#include <QScrollArea>
 
-#include "src/data.h"
+#include "src/data-source.h"
 
-class data_source_t;
-class QTextBrowser;
-class FSSSpriteView;
-class FSSPaletteView;
-class QStackedLayout;
+class QLabel;
 
-class FSSResourceView : public QWidget {
+class FSSSpriteView : public QScrollArea {
   Q_OBJECT
 
  protected:
-  data_source_t *source;
-
-  QStackedLayout *resourcesStack;
-  QTextBrowser *textBrowser;
-
-  FSSSpriteView *viewSprite;
-  FSSPaletteView *viewPalette;
-  QWidget *viewEmpty;
+  sprite_t *sprite;
+  QLabel *labelImage;
 
  public:
-  explicit FSSResourceView(data_source_t *source, QWidget *parent = 0);
-  virtual ~FSSResourceView();
+  explicit FSSSpriteView(QWidget *pParent = NULL);
 
- public slots:
-  void onResourceSelected(data_res_class_t resource_class,
-                          unsigned int index);
+  void setSprite(sprite_t *sprite);
+
+ protected:
+  QPixmap getPixmap();
 };
 
-#endif  // SRC_RESOURCEVIEW_H_
+#endif  // SRC_SPRITEVIEW_H_

@@ -22,26 +22,53 @@
 #ifndef SRC_PALETTEVIEW_H_
 #define SRC_PALETTEVIEW_H_
 
-#include <QWidget>
+#include <QTableView>
 
 #include "src/data-source.h"
 
-class FSSPaletteView : public QWidget {
+class palette_t;
+
+class FSSPaletteModel : public QAbstractItemModel {
   Q_OBJECT
 
  protected:
   palette_t *palette;
-  unsigned int row_height;
+
+ public:
+  explicit FSSPaletteModel(QObject *parent = 0);
+
+  // Header:
+  QVariant headerData(int section, Qt::Orientation orientation,
+                      int role = Qt::DisplayRole) const override;
+
+  // Basic functionality:
+  QModelIndex index(int row, int column,
+                    const QModelIndex &parent = QModelIndex()) const override;
+  QModelIndex parent(const QModelIndex &) const override;
+
+  int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+  int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+
+  QVariant data(const QModelIndex &index,
+                int role = Qt::DisplayRole) const override;
+
+  void setPalette(palette_t *_palette);
+};
+
+class FSSPaletteView : public QTableView {
+  Q_OBJECT
+
+ protected:
+  FSSPaletteModel *model;
+  palette_t *palette;
 
  public:
   explicit FSSPaletteView(QWidget *pParent = NULL);
 
   void setPalette(palette_t *palette);
 
-  virtual QSize sizeHint() const;
-
- protected:
-  virtual void paintEvent(QPaintEvent *event);
+ public slots:
+  void on_copy_color(const QModelIndex &index);
 };
 
 #endif  // SRC_PALETTEVIEW_H_

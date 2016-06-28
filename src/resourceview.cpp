@@ -28,6 +28,8 @@
 #include <QLabel>
 
 #include "src/data-source.h"
+#include "src/spriteview.h"
+#include "src/paletteview.h"
 
 FSSResourceView::FSSResourceView(data_source_t *source,
                                  QWidget *parent)
@@ -37,9 +39,20 @@ FSSResourceView::FSSResourceView(data_source_t *source,
   QVBoxLayout *layout = new QVBoxLayout(this);
   setLayout(layout);
 
-  scrollArea = new QScrollArea(this);
-  scrollArea->setMinimumSize(200, 200);
-  layout->addWidget(scrollArea);
+  resourcesStack = new QStackedLayout(this);
+  layout->addLayout(resourcesStack);
+
+  viewEmpty = new QWidget(this);
+  viewEmpty->setMinimumSize(200, 200);
+  resourcesStack->addWidget(viewEmpty);
+
+  viewSprite = new FSSSpriteView(this);
+  viewSprite->setMinimumSize(200, 200);
+  resourcesStack->addWidget(viewSprite);
+
+  viewPalette = new FSSPaletteView(this);
+  viewPalette->setMinimumSize(200, 200);
+  resourcesStack->addWidget(viewPalette);
 
   textBrowser = new QTextBrowser(this);
   textBrowser->setMinimumSize(200, 200);
@@ -78,74 +91,39 @@ FSSResourceView::onResourceSelected(data_res_class_t resource_class,
     switch (data_t::get_resource_type(resource_class)) {
       case data_type_sprite: {
         sprite_t *sprite = source->get_sprite(resource_class, index, 0);
-        if (sprite != NULL) {
-          QLabel *spriteView = new QLabel(scrollArea);
-          spriteView->setBackgroundRole(QPalette::LinkVisited);
-          spriteView->setSizePolicy(QSizePolicy::Ignored,
-                                    QSizePolicy::Ignored);
-          spriteView->setScaledContents(false);
-          spriteView->setSizePolicy(QSizePolicy::MinimumExpanding,
-                                    QSizePolicy::MinimumExpanding);
-          QPixmap pixmap = pixmapFromSprite(sprite);
-          QSize size = pixmap.size();
-          size *= 2;
-          pixmap = pixmap.scaled(size);
-          spriteView->resize(size);
-          spriteView->setPixmap(pixmap);
-          textBrowser->setText(spriteInfo(sprite));
-          resView = spriteView;
-        }
+        viewSprite->setSprite(sprite);
+        resView = viewSprite;
         break;
       }
       case data_type_animation: {
+        resView = viewEmpty;
         break;
       }
       case data_type_sound: {
+        resView = viewEmpty;
         break;
       }
       case data_type_music: {
+        resView = viewEmpty;
         break;
       }
       case data_type_palette: {
         palette_t *palette = source->get_palette(index);
         if (palette != NULL) {
-          FSSPaletteView *paletteView = new FSSPaletteView(scrollArea);
-          paletteView->setPalette(palette);
+          viewPalette->setPalette(palette);
           QString info = QString::asprintf("Palette:\n%zu colors",
                                            palette->get_size());
           textBrowser->setText(info);
-          resView = paletteView;
+          resView = viewPalette;
         }
         break;
       }
       case data_type_unknown: {
-        scrollArea->setWidget(NULL);
+        resView = viewEmpty;
         break;
       }
     }
   }
 
-  if (resView == NULL) {
-    resView = new QWidget(this);
-    textBrowser->setText(QString());
-  }
-  scrollArea->setWidget(resView);
-}
-
-QPixmap
-FSSResourceView::pixmapFromSprite(sprite_t *sprite) {
-  if (sprite == NULL) {
-    return QPixmap();
-  }
-
-  QImage *image = new QImage(reinterpret_cast<uchar*>(sprite->get_data()),
-                             sprite->get_width(),
-                             sprite->get_height(),
-                             QImage::Format_ARGB32);
-
-  QPixmap pixmap = QPixmap::fromImage(*image);
-
-  delete image;
-
-  return pixmap;
+  resourcesStack->setCurrentWidget(resView);
 }

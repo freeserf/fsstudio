@@ -61,6 +61,7 @@ class sprite_amiga_t : public sprite_t {
   sprite_amiga_t *split_horizontaly(bool return_right);
   void stick(sprite_amiga_t *sticker, unsigned int x, unsigned int y);
   void fill(color_t color);
+  void fill_masked(color_t color);
 };
 
 class palette_amiga_t : public palette_t {
