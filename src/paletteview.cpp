@@ -1,5 +1,5 @@
 /*
- * paletteview.cpp - FVPaletteView implementation
+ * paletteview.cpp - FSSPaletteModel implementation
  *
  * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
  *

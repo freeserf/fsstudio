@@ -1,5 +1,5 @@
 /*
- * resourcemodel.cpp - FVResourceModel implementation
+ * resourcemodel.cpp - FSSResourceModel implementation
  *
  * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
  *

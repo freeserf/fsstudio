@@ -1,5 +1,5 @@
 /*
- * sourcesview.cpp - FVSourcesView implementation
+ * sourcesview.cpp - FSSSourcesView implementation
  *
  * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
  *

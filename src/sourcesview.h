@@ -1,5 +1,5 @@
 /*
- * sourcesview.h - FVSourcesView declaration
+ * sourcesview.h - FSSSourcesView declaration
  *
  * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
  *

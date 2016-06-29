@@ -37,6 +37,7 @@ class FSSSpriteView : public QScrollArea {
 
  public:
   explicit FSSSpriteView(QWidget *pParent = NULL);
+  virtual ~FSSSpriteView();
 
   void setSprite(sprite_t *sprite);
 

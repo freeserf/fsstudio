@@ -1,5 +1,5 @@
 /*
- * resourceview.cpp - FVResourceView implementation
+ * resourceview.cpp - FSSResourceView implementation
  *
  * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
  *

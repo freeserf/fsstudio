@@ -29,6 +29,13 @@ FSSSpriteView::FSSSpriteView(QWidget *pParent) : QScrollArea(pParent) {
   setWidget(labelImage);
 }
 
+FSSSpriteView::~FSSSpriteView() {
+  if (sprite != NULL) {
+    delete sprite;
+    sprite = NULL;
+  }
+}
+
 void
 FSSSpriteView::setSprite(sprite_t *_sprite) {
   if (sprite != NULL) {
@@ -45,10 +52,14 @@ FSSSpriteView::setSprite(sprite_t *_sprite) {
   labelImage->setSizePolicy(QSizePolicy::MinimumExpanding,
                             QSizePolicy::MinimumExpanding);
   QPixmap pixmap = getPixmap();
-  QSize size = pixmap.size();
-  size *= 2;
-  pixmap = pixmap.scaled(size);
-  labelImage->resize(size);
+  if (pixmap.isNull()) {
+    labelImage->resize(QSize());
+  } else {
+    QSize size = pixmap.size();
+    size *= 2;
+    pixmap = pixmap.scaled(size);
+    labelImage->resize(size);
+  }
   labelImage->setPixmap(pixmap);
 
   update();
@@ -61,8 +72,7 @@ FSSSpriteView::getPixmap() {
   }
 
   QImage *image = new QImage(reinterpret_cast<uchar*>(sprite->get_data()),
-                             sprite->get_width(),
-                             sprite->get_height(),
+                             sprite->get_width(), sprite->get_height(),
                              QImage::Format_ARGB32);
 
   QPixmap pixmap = QPixmap::fromImage(*image);

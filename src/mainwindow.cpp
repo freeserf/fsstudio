@@ -1,5 +1,5 @@
 /*
- * mainwindow.cpp - FVMainWindow implementation
+ * mainwindow.cpp - FSSMainWindow implementation
  *
  * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
  *

@@ -1,5 +1,5 @@
 /*
- * resourceview.h - FVResourceView declaration
+ * resourceview.h - FSSResourceView declaration
  *
  * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
  *
