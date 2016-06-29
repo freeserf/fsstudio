@@ -19,7 +19,7 @@
 # along with FSStudio.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-QT += core gui
+QT += core gui multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -40,7 +40,8 @@ SOURCES += src/main.cpp\
     src/resourceview.cpp \
     src/sourcesview.cpp \
     src/paletteview.cpp \
-    src/spriteview.cpp
+    src/spriteview.cpp \
+    src/audioview.cpp
 
 HEADERS  += src/mainwindow.h \
     freeserf/src/data-source-amiga.h \
@@ -56,7 +57,8 @@ HEADERS  += src/mainwindow.h \
     src/resourceview.h \
     src/sourcesview.h \
     src/paletteview.h \
-    src/spriteview.h
+    src/spriteview.h \
+    src/audioview.h
 
 INCLUDEPATH += .
 INCLUDEPATH += freeserf

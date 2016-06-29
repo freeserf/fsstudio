@@ -137,6 +137,13 @@ FSSPaletteView::FSSPaletteView(QWidget *pParent) : QTableView(pParent) {
           this, &FSSPaletteView::on_copy_color);
 }
 
+FSSPaletteView::~FSSPaletteView() {
+  if (palette != NULL) {
+    delete palette;
+    palette = NULL;
+  }
+}
+
 void
 FSSPaletteView::setPalette(palette_t *_palette) {
   if (palette != NULL) {
@@ -161,36 +168,3 @@ FSSPaletteView::on_copy_color(const QModelIndex &index) {
     clipboard->setText(text);
   }
 }
-
-/*
-void
-FSSPaletteView::paintEvent(QPaintEvent *event) {
-  if (palette == NULL) {
-    return;
-  }
-
-  QPainter painter(this);
-
-  painter.setBrush(QBrush(QColor(0, 0, 0, 0)));
-  const QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-  QFontMetrics metrics(font);
-  painter.setFont(font);
-
-  QRect tr = metrics.boundingRect(QString("000 0x00 0x00 0x00"));
-  int cx = tr.width() + 10;
-
-  for (size_t i = 0; i < palette->get_size(); i++) {
-    QRect row_rect(0, i * row_height, DEF_WIDTH, row_height);
-    if (!event->region().intersected(row_rect).isEmpty()) {
-      color_t c = palette->get_color(i);
-      QString text = QString::asprintf("%03zu 0x%02x 0x%02x 0x%02x", i,
-                                       c.red, c.green, c.blue);
-      painter.drawText(row_rect, text);
-      QColor color(c.red, c.green, c.blue);
-      row_rect.setLeft(row_rect.left() + cx);
-      row_rect.adjust(1, 1, -1, -1);
-      painter.fillRect(row_rect, QBrush(color));
-    }
-  }
-}
-*/

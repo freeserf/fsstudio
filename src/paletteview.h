@@ -64,6 +64,7 @@ class FSSPaletteView : public QTableView {
 
  public:
   explicit FSSPaletteView(QWidget *pParent = NULL);
+  virtual ~FSSPaletteView();
 
   void setPalette(palette_t *palette);
 

@@ -30,6 +30,7 @@
 #include "src/data-source.h"
 #include "src/spriteview.h"
 #include "src/paletteview.h"
+#include "src/audioview.h"
 
 FSSResourceView::FSSResourceView(data_source_t *source,
                                  QWidget *parent)
@@ -53,6 +54,10 @@ FSSResourceView::FSSResourceView(data_source_t *source,
   viewPalette = new FSSPaletteView(this);
   viewPalette->setMinimumSize(200, 200);
   resourcesStack->addWidget(viewPalette);
+
+  viewAudio = new FSSAudioView(this);
+  viewAudio->setMinimumSize(200, 200);
+  resourcesStack->addWidget(viewAudio);
 
   textBrowser = new QTextBrowser(this);
   textBrowser->setMinimumSize(200, 200);
@@ -100,22 +105,26 @@ FSSResourceView::onResourceSelected(data_res_class_t resource_class,
         break;
       }
       case data_type_sound: {
-        resView = viewEmpty;
+        size_t size = 0;
+        void *data = source->get_sound(index, &size);
+        viewAudio->setAudioData(data, size, "wav");
+        resView = viewAudio;
         break;
       }
       case data_type_music: {
-        resView = viewEmpty;
+        size_t size = 0;
+        void *data = source->get_music(index, &size);
+        viewAudio->setAudioData(data, size, "mid");
+        resView = viewAudio;
         break;
       }
       case data_type_palette: {
         palette_t *palette = source->get_palette(index);
-        if (palette != NULL) {
-          viewPalette->setPalette(palette);
-          QString info = QString::asprintf("Palette:\n%zu colors",
-                                           palette->get_size());
-          textBrowser->setText(info);
-          resView = viewPalette;
-        }
+        viewPalette->setPalette(palette);
+        QString info = QString::asprintf("Palette:\n%zu colors",
+                                         palette->get_size());
+        textBrowser->setText(info);
+        resView = viewPalette;
         break;
       }
       case data_type_unknown: {

@@ -1,5 +1,5 @@
 /*
- * resourceview.h - FSSResourceView declaration
+ * audioview.h - FSSAudioView declaration
  *
  * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
  *
@@ -19,41 +19,39 @@
  * along with FSStudio.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_RESOURCEVIEW_H_
-#define SRC_RESOURCEVIEW_H_
+#ifndef SRC_AUDIOVIEW_H_
+#define SRC_AUDIOVIEW_H_
 
 #include <QWidget>
+#include <QMediaPlayer>
 
-#include "src/data.h"
+#include "src/data-source.h"
 
-class data_source_t;
-class QTextBrowser;
-class FSSSpriteView;
-class FSSPaletteView;
-class FSSAudioView;
-class QStackedLayout;
+class QTemporaryFile;
+class QSlider;
+class QPushButton;
 
-class FSSResourceView : public QWidget {
+class FSSAudioView : public QWidget {
   Q_OBJECT
 
  protected:
-  data_source_t *source;
-
-  QStackedLayout *resourcesStack;
-  QTextBrowser *textBrowser;
-
-  FSSSpriteView *viewSprite;
-  FSSPaletteView *viewPalette;
-  FSSAudioView *viewAudio;
-  QWidget *viewEmpty;
+  QTemporaryFile *file;
+  QMediaPlayer *player;
+  QSlider *slider;
+  QPushButton *buttonPlay;
 
  public:
-  explicit FSSResourceView(data_source_t *source, QWidget *parent = 0);
-  virtual ~FSSResourceView();
+  explicit FSSAudioView(QWidget *pParent = NULL);
+  virtual ~FSSAudioView();
+
+  void setAudioData(void *data, size_t size, const QString &format);
 
  public slots:
-  void onResourceSelected(data_res_class_t resource_class,
-                          unsigned int index);
+  void on_media_status_changed(QMediaPlayer::MediaStatus status);
+  void on_duration_changed(qint64 duration);
+  void on_position_changed(qint64 position);
+  void on_state_changed(QMediaPlayer::State state);
+  void on_play();
 };
 
-#endif  // SRC_RESOURCEVIEW_H_
+#endif  // SRC_AUDIOVIEW_H_
