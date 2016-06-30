@@ -54,6 +54,8 @@ class FSSResourceView : public QWidget {
  public slots:
   void onResourceSelected(data_res_class_t resource_class,
                           unsigned int index);
+  void on_save();
+  void on_copy();
 };
 
 #endif  // SRC_RESOURCEVIEW_H_

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/clipboard-icon.png</file>
+        <file>icons/disk-icon.png</file>
+    </qresource>
+</RCC>

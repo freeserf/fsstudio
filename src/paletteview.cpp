@@ -155,6 +155,7 @@ FSSPaletteView::setPalette(palette_t *_palette) {
 
   model->setPalette(palette);
   resizeColumnsToContents();
+  resizeRowsToContents();
   update();
 }
 
@@ -167,4 +168,17 @@ FSSPaletteView::on_copy_color(const QModelIndex &index) {
     QClipboard *clipboard = QApplication::clipboard();
     clipboard->setText(text);
   }
+}
+
+void
+FSSPaletteView::copy() {
+  if (selectedIndexes().size() < 1) {
+    return;
+  }
+  QModelIndex index = selectedIndexes().first();
+  if (!index.isValid()) {
+    return;
+  }
+
+  on_copy_color(index);
 }

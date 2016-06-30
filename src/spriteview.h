@@ -68,7 +68,8 @@ class FSSSpriteView : public QScrollArea {
   QPixmap getPixmap();
 
  public slots:
-  void on_image_copy();
+  void copy();
+  void save();
 };
 
 #endif  // SRC_SPRITEVIEW_H_

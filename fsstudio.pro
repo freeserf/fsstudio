@@ -62,3 +62,6 @@ HEADERS  += src/mainwindow.h \
 
 INCLUDEPATH += .
 INCLUDEPATH += freeserf
+
+RESOURCES += \
+    res/resources.qrc

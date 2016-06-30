@@ -70,6 +70,7 @@ class FSSPaletteView : public QTableView {
 
  public slots:
   void on_copy_color(const QModelIndex &index);
+  void copy();
 };
 
 #endif  // SRC_PALETTEVIEW_H_

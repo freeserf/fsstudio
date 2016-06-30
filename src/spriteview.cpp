@@ -25,6 +25,7 @@
 #include <QApplication>
 #include <QMouseEvent>
 #include <QClipboard>
+#include <QFileDialog>
 
 // FSSClickableLabel
 
@@ -68,7 +69,7 @@ FSSSpriteView::FSSSpriteView(QWidget *pParent) : QScrollArea(pParent) {
   labelImage = new FSSClickableLabel(this);
   setWidget(labelImage);
   connect(labelImage, &FSSClickableLabel::doubleClicked,
-          this, &FSSSpriteView::on_image_copy);
+          this, &FSSSpriteView::copy);
 }
 
 FSSSpriteView::~FSSSpriteView() {
@@ -133,7 +134,7 @@ FSSSpriteView::getPixmap() {
 }
 
 void
-FSSSpriteView::on_image_copy() {
+FSSSpriteView::copy() {
   if (sprite == NULL) {
     return;
   }
@@ -142,4 +143,19 @@ FSSSpriteView::on_image_copy() {
 
   QClipboard *clipboard = QApplication::clipboard();
   clipboard->setImage(image);
+}
+
+void
+FSSSpriteView::save() {
+  if (sprite == NULL) {
+    return;
+  }
+
+  QString path = QFileDialog::getSaveFileName(this, "Save sprite", QString(), "Image File (*.png)");
+  if (path.isEmpty()) {
+    return;
+  }
+
+  QImage image = getImage();
+  image.save(path, "png");
 }

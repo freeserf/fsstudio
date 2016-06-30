@@ -26,6 +26,7 @@
 #include <QTextBrowser>
 #include <QScrollArea>
 #include <QLabel>
+#include <QToolBar>
 
 #include "src/data-source.h"
 #include "src/spriteview.h"
@@ -58,6 +59,11 @@ FSSResourceView::FSSResourceView(data_source_t *source,
   viewAudio = new FSSAudioView(this);
   viewAudio->setMinimumSize(200, 200);
   resourcesStack->addWidget(viewAudio);
+
+  QToolBar *toolBar = new QToolBar(this);
+  toolBar->addAction(QIcon(":/icons/disk-icon.png"), "Save", this, &FSSResourceView::on_save);
+  toolBar->addAction(QIcon(":/icons/clipboard-icon.png"), "Copy", this, &FSSResourceView::on_copy);
+  layout->addWidget(toolBar);
 
   textBrowser = new QTextBrowser(this);
   textBrowser->setMinimumSize(200, 200);
@@ -135,4 +141,16 @@ FSSResourceView::onResourceSelected(data_res_class_t resource_class,
   }
 
   resourcesStack->setCurrentWidget(resView);
+}
+
+void
+FSSResourceView::on_save() {
+  QWidget *current_view = resourcesStack->currentWidget();
+  QMetaObject::invokeMethod(current_view, "save");
+}
+
+void
+FSSResourceView::on_copy() {
+  QWidget *current_view = resourcesStack->currentWidget();
+  QMetaObject::invokeMethod(current_view, "copy");
 }
