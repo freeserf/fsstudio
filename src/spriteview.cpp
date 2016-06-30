@@ -21,12 +21,54 @@
 
 #include "src/spriteview.h"
 
-#include <QLabel>
+#include <QTimer>
+#include <QApplication>
+#include <QMouseEvent>
+#include <QClipboard>
+
+// FSSClickableLabel
+
+FSSClickableLabel::FSSClickableLabel(QWidget *pParent) : QLabel(pParent) {
+  click = false;
+  click_timer.setInterval(QApplication::doubleClickInterval());
+  connect(&click_timer, &QTimer::timeout,
+          this, &FSSClickableLabel::on_drop_click);
+}
+
+FSSClickableLabel::~FSSClickableLabel() {
+}
+
+void
+FSSClickableLabel::mouseReleaseEvent(QMouseEvent *event) {
+  if (event->button() != Qt::LeftButton) {
+    return;
+  }
+
+  if (click) {
+    click_timer.stop();
+    emit doubleClicked();
+    click = false;
+  } else {
+    emit clicked();
+    click_timer.start();
+    click = true;
+  }
+}
+
+void
+FSSClickableLabel::on_drop_click() {
+  click_timer.stop();
+  click = false;
+}
+
+// FSSSpriteView
 
 FSSSpriteView::FSSSpriteView(QWidget *pParent) : QScrollArea(pParent) {
   sprite = NULL;
-  labelImage = new QLabel(this);
+  labelImage = new FSSClickableLabel(this);
   setWidget(labelImage);
+  connect(labelImage, &FSSClickableLabel::doubleClicked,
+          this, &FSSSpriteView::on_image_copy);
 }
 
 FSSSpriteView::~FSSSpriteView() {
@@ -65,19 +107,39 @@ FSSSpriteView::setSprite(sprite_t *_sprite) {
   update();
 }
 
+QImage
+FSSSpriteView::getImage() {
+  if (sprite == NULL) {
+    return QImage();
+  }
+
+  QImage image(reinterpret_cast<uchar*>(sprite->get_data()),
+               sprite->get_width(), sprite->get_height(),
+               QImage::Format_ARGB32);
+
+  return image;
+}
+
 QPixmap
 FSSSpriteView::getPixmap() {
   if (sprite == NULL) {
     return QPixmap();
   }
 
-  QImage *image = new QImage(reinterpret_cast<uchar*>(sprite->get_data()),
-                             sprite->get_width(), sprite->get_height(),
-                             QImage::Format_ARGB32);
-
-  QPixmap pixmap = QPixmap::fromImage(*image);
-
-  delete image;
+  QImage image = getImage();
+  QPixmap pixmap = QPixmap::fromImage(image);
 
   return pixmap;
+}
+
+void
+FSSSpriteView::on_image_copy() {
+  if (sprite == NULL) {
+    return;
+  }
+
+  QImage image = getImage();
+
+  QClipboard *clipboard = QApplication::clipboard();
+  clipboard->setImage(image);
 }

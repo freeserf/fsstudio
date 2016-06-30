@@ -23,17 +23,39 @@
 #define SRC_SPRITEVIEW_H_
 
 #include <QScrollArea>
+#include <QLabel>
+#include <QTimer>
 
 #include "src/data-source.h"
 
-class QLabel;
+class FSSClickableLabel : public QLabel {
+  Q_OBJECT
+
+ protected:
+  bool click;
+  QTimer click_timer;
+
+ public:
+  explicit FSSClickableLabel(QWidget *pParent = NULL);
+  virtual ~FSSClickableLabel();
+
+ protected:
+  virtual void mouseReleaseEvent(QMouseEvent *event);
+
+ signals:
+  void clicked();
+  void doubleClicked();
+
+ public slots:
+  void on_drop_click();
+};
 
 class FSSSpriteView : public QScrollArea {
   Q_OBJECT
 
  protected:
   sprite_t *sprite;
-  QLabel *labelImage;
+  FSSClickableLabel *labelImage;
 
  public:
   explicit FSSSpriteView(QWidget *pParent = NULL);
@@ -42,7 +64,11 @@ class FSSSpriteView : public QScrollArea {
   void setSprite(sprite_t *sprite);
 
  protected:
+  QImage getImage();
   QPixmap getPixmap();
+
+ public slots:
+  void on_image_copy();
 };
 
 #endif  // SRC_SPRITEVIEW_H_
