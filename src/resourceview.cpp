@@ -97,12 +97,16 @@ void
 FSSResourceView::onResourceSelected(data_res_class_t resource_class,
                                     unsigned int index) {
   QWidget *resView = NULL;
+  QString info;
 
   if (resource_class != data_res_none) {
     switch (data_t::get_resource_type(resource_class)) {
       case data_type_sprite: {
         sprite_t *sprite = source->get_sprite(resource_class, index, 0);
         viewSprite->setSprite(sprite);
+        if (sprite != NULL) {
+          info = spriteInfo(sprite);
+        }
         resView = viewSprite;
         break;
       }
@@ -127,9 +131,10 @@ FSSResourceView::onResourceSelected(data_res_class_t resource_class,
       case data_type_palette: {
         palette_t *palette = source->get_palette(index);
         viewPalette->setPalette(palette);
-        QString info = QString::asprintf("Palette:\n%zu colors",
-                                         palette->get_size());
-        textBrowser->setText(info);
+        if (palette != NULL) {
+          info = QString::asprintf("Palette:\n%zu colors",
+                                   palette->get_size());
+        }
         resView = viewPalette;
         break;
       }
@@ -141,6 +146,7 @@ FSSResourceView::onResourceSelected(data_res_class_t resource_class,
   }
 
   resourcesStack->setCurrentWidget(resView);
+  textBrowser->setText(info);
 }
 
 void
