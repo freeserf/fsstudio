@@ -1079,12 +1079,28 @@ data_source_amiga_t::get_torso_sprite(unsigned int index) {
   }
   w = (w+7)/8;
 
-  sprite_amiga_t *pixels = decode_planned_sprite(data, w, h, 0, 0, palette);
+  size_t bps = w*h;
 
-  pixels->set_delta(delta_y, delta_x);
-  pixels->set_offset(-offset_x, -offset_y);
+  sprite_amiga_t *mask = decode_mask_sprite(data, w*8, h);
+  data += bps;
 
-  return pixels;
+  uint8_t *d = new uint8_t[bps*5];
+  memcpy(d, data, bps*4);
+  data += bps * 5;
+  memcpy(d + bps*4, data, bps);
+
+  sprite_amiga_t *pixels = decode_planned_sprite(d, w, h, 0, 0, palette);
+
+  delete[] d;
+
+  sprite_amiga_t *res = pixels->get_amiga_masked(mask);
+  delete pixels;
+  delete mask;
+
+  res->set_delta(delta_y, delta_x);
+  res->set_offset(-offset_x, -offset_y);
+
+  return res;
 }
 
 typedef struct {
