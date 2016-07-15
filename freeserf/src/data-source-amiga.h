@@ -23,6 +23,7 @@
 #define SRC_DATA_SOURCE_AMIGA_H_
 
 #include <string>
+#include <map>
 
 #include "src/data-source.h"
 
@@ -100,11 +101,14 @@ class data_source_amiga_t : public data_source_t {
  private:
   void *gfxfast;
   void *gfxchip;
+  void *gfxpics;
   void *sound;
   void *music;
   size_t music_size;
 
   void *data_pointers[24];
+  typedef std::map<size_t, void*> pics_t;
+  pics_t pics;
 
   size_t *icon_catalog;
 

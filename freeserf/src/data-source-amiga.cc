@@ -328,6 +328,14 @@ data_source_amiga_t::load(const std::string &path) {
     LOGW("data", "Unable to load music data.");
   }
 
+  gfxpics = file_read(path + "/gfxpics", &sound_size);
+  if (gfxpics != NULL) {
+    uint32_t *infos = reinterpret_cast<uint32_t*>(gfxpics);
+    for (size_t i = 0; i < 28; i++) {
+      infos[i] = be32toh(infos[i]);
+    }
+  }
+
   return true;
 }
 
@@ -345,6 +353,21 @@ data_source_amiga_t::get_sprite(data_res_class_t res, unsigned int index,
     case data_res_art_flag:
       break;
     case data_res_art_box:
+      if (gfxpics != NULL) {
+        pics_t::iterator it = pics.find(index);
+        if (it != pics.end()) {
+          sprite = decode_interlased_sprite(pics[index], 16, 144, 0, 0, palette);
+        } else {
+          uint32_t *infos = reinterpret_cast<uint32_t*>(gfxpics);
+          size_t offset = infos[index*2];
+          size_t size = infos[index*2 + 1];
+          char *data = reinterpret_cast<char*>(gfxpics) + 28*4 + offset;
+          decode(data, size);
+          void *pic = unpack(data, size, &size);
+          pics[index] = pic;
+          sprite = decode_interlased_sprite(pic, 16, 144, 0, 0, palette);
+        }
+      }
       break;
     case data_res_credits_bg:
       sprite = decode_interlased_sprite(data_pointers[23], 40, 200,
