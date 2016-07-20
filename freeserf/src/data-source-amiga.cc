@@ -854,40 +854,6 @@ data_source_amiga_t::get_icon_sprite(unsigned int index) {
   return decode_planned_sprite(data, header.width, header.height,
                                header.compression, header.filling, palette);
 }
-/*
-static unsigned int
-calc_plaines_count(uint8_t filled) {
-  unsigned int count = 0;
-
-  for ( int i = 0 ; i < 5 ; i++ ) {
-    if ((filled & 1) != 1) {
-      count++;
-    }
-    filled = filled >> 1;
-  }
-
-  return count;
-}
-*/
-static void
-calc_compression_filling(uint16_t compression, uint8_t *compressed,
-                         uint8_t *filled) {
-  *compressed = 0;
-  *filled = 0;
-  for ( int i = 0 ; i < 5 ; i++ ) {
-    *compressed  = *compressed >> 1;
-    *filled = *filled >> 1;
-
-    if ( compression & 0x8000 ) {
-      *compressed = *compressed | 0x10;
-      if ( compression & 0x4000 ) {
-        *filled = *filled | 0x10;
-      }
-      compression = compression << 1;
-    }
-    compression = compression << 1;
-  }
-}
 
 static uint8_t
 invert5bit(uint8_t src) {
@@ -922,19 +888,15 @@ data_source_amiga_t::get_ground_sprite(unsigned int index) {
     return NULL;
   }
 
-  uint16_t cf = *reinterpret_cast<uint16_t*>(data);
-  data += 2;
-
-  uint8_t compressed = 0;
-  uint8_t filled = 0;
-  calc_compression_filling(cf, &compressed, &filled);
+  uint8_t filled = *data++;
+  uint8_t compressed = *data++;
 
   sprite_amiga_t *sprite = decode_planned_sprite(data, 4, 21, compressed,
                                                  filled, palette);
 
   if (sprite != NULL) {
     sprite->set_delta(1, 0);
-    sprite->set_offset(compressed, filled);
+    sprite->set_offset(0, 0);
   }
 
   return sprite;
