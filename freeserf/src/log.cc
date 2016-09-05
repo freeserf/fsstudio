@@ -1,7 +1,7 @@
 /*
  * log.cc - Logging
  *
- * Copyright (C) 2012  Jon Lund Steffensen <jonlst@gmail.com>
+ * Copyright (C) 2012-2016  Jon Lund Steffensen <jonlst@gmail.com>
  *
  * This file is part of freeserf.
  *
@@ -21,39 +21,34 @@
 
 #include "src/log.h"
 
-#include <cstdarg>
+#include <iostream>
 
-static log_level_t log_level = LOG_LEVEL_DEBUG;
-static FILE *log_file = NULL;
+#ifndef NDEBUG
+Log::Level Log::level = Log::LevelDebug;
+#else
+Log::Level Log::level = Log::LevelInfo;
+#endif
+
+std::ostream *Log::stream = &std::cout;
+
+std::ostream Log::Logger::dummy(0);
+Log::Logger Log::Verbose(Log::LevelVerbose, "Verbose");
+Log::Logger Log::Debug(Log::LevelDebug, "Debug");
+Log::Logger Log::Info(Log::LevelInfo, "Info");
+Log::Logger Log::Warn(Log::LevelWarn, "Warning");
+Log::Logger Log::Error(Log::LevelError, "Error");
 
 void
-log_set_file(FILE *file) {
-  log_file = file;
+Log::set_file(std::ostream *_stream) {
+  stream = _stream;
 }
 
 void
-log_set_level(log_level_t level) {
-  log_level = level;
-}
-
-static void
-log_msg_va(log_level_t level, const char *system, const char *format,
-           va_list ap) {
-  if (log_file == NULL) {
-    return;
-  }
-
-  if (level >= log_level) {
-    if (system != NULL) fprintf(log_file, "[%s] ", system);
-    vfprintf(log_file, format, ap);
-    fprintf(log_file, "\n");
-  }
-}
-
-void
-log_msg(log_level_t level, const char *system, const char *format, ...) {
-  va_list ap;
-  va_start(ap, format);
-  log_msg_va(level, system, format, ap);
-  va_end(ap);
+Log::set_level(Log::Level _level) {
+  level = _level;
+  Verbose.apply_level();
+  Debug.apply_level();
+  Info.apply_level();
+  Warn.apply_level();
+  Error.apply_level();
 }

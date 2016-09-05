@@ -50,52 +50,52 @@
  or mask parts of other sprites completely (mask sprites).
  */
 
-dos_resource_t dos_resources[] = {
-  {   0, 0,    dos_sprite_type_unknown     },  // none
-  {   1, 3997, dos_sprite_type_solid       },  // art_landscape
-  {   2, 0,    dos_sprite_type_unknown     },  // animation
-  {   4, 3,    dos_sprite_type_overlay     },  // serf_shadow
-  {   5, 3,    dos_sprite_type_solid       },  // dotted_lines
-  {  15, 3997, dos_sprite_type_solid       },  // art_flag
-  {  25, 3,    dos_sprite_type_solid       },  // art_box
-  {  40, 3998, dos_sprite_type_solid       },  // credits_bg
-  {  41, 3998, dos_sprite_type_solid       },  // logo
-  {  42, 3,    dos_sprite_type_solid       },  // symbol
-  {  60, 3,    dos_sprite_type_mask        },  // map_mask_up
-  { 141, 3,    dos_sprite_type_mask        },  // map_mask_down
-  { 230, 3,    dos_sprite_type_mask        },  // path_mask
-  { 260, 3,    dos_sprite_type_solid       },  // map_ground
-  { 300, 3,    dos_sprite_type_solid       },  // path_ground
-  { 321, 3,    dos_sprite_type_transparent },  // game_object
-  { 600, 3,    dos_sprite_type_solid       },  // frame_top
-  { 610, 3,    dos_sprite_type_transparent },  // map_border
-  { 630, 3,    dos_sprite_type_transparent },  // map_waves
-  { 660, 3,    dos_sprite_type_solid       },  // frame_popup
-  { 670, 3,    dos_sprite_type_solid       },  // indicator
-  { 750, 3,    dos_sprite_type_transparent },  // font
-  { 810, 3,    dos_sprite_type_transparent },  // font_shadow
-  { 870, 3,    dos_sprite_type_solid       },  // icon
-  {1250, 3,    dos_sprite_type_transparent },  // map_object
-  {1500, 3,    dos_sprite_type_overlay     },  // map_shadow
-  {1750, 3,    dos_sprite_type_solid       },  // panel_button
-  {1780, 3,    dos_sprite_type_solid       },  // frame_bottom
-  {2500, 3,    dos_sprite_type_transparent },  // serf_torso
-  {3150, 3,    dos_sprite_type_transparent },  // serf_head
-  {3880, 3,    dos_sprite_type_solid       },  // frame_split
-  {3900, 0,    dos_sprite_type_unknown     },  // sound
-  {3990, 0,    dos_sprite_type_unknown     },  // music
-  {3999, 3,    dos_sprite_type_transparent },  // cursor
-  {   3, 0,    dos_sprite_type_unknown     },  // palette
+DataSourceDOS::Resource dos_resources[] = {
+  {   0, 0,    DataSourceDOS::SpriteTypeUnknown     },  // none
+  {   1, 3997, DataSourceDOS::SpriteTypeSolid       },  // art_landscape
+  {   2, 0,    DataSourceDOS::SpriteTypeUnknown     },  // animation
+  {   4, 3,    DataSourceDOS::SpriteTypeOverlay     },  // serf_shadow
+  {   5, 3,    DataSourceDOS::SpriteTypeSolid       },  // dotted_lines
+  {  15, 3997, DataSourceDOS::SpriteTypeSolid       },  // art_flag
+  {  25, 3,    DataSourceDOS::SpriteTypeSolid       },  // art_box
+  {  40, 3998, DataSourceDOS::SpriteTypeSolid       },  // credits_bg
+  {  41, 3998, DataSourceDOS::SpriteTypeSolid       },  // logo
+  {  42, 3,    DataSourceDOS::SpriteTypeSolid       },  // symbol
+  {  60, 3,    DataSourceDOS::SpriteTypeMask        },  // map_mask_up
+  { 141, 3,    DataSourceDOS::SpriteTypeMask        },  // map_mask_down
+  { 230, 3,    DataSourceDOS::SpriteTypeMask        },  // path_mask
+  { 260, 3,    DataSourceDOS::SpriteTypeSolid       },  // map_ground
+  { 300, 3,    DataSourceDOS::SpriteTypeSolid       },  // path_ground
+  { 321, 3,    DataSourceDOS::SpriteTypeTransparent },  // game_object
+  { 600, 3,    DataSourceDOS::SpriteTypeSolid       },  // frame_top
+  { 610, 3,    DataSourceDOS::SpriteTypeTransparent },  // map_border
+  { 630, 3,    DataSourceDOS::SpriteTypeTransparent },  // map_waves
+  { 660, 3,    DataSourceDOS::SpriteTypeSolid       },  // frame_popup
+  { 670, 3,    DataSourceDOS::SpriteTypeSolid       },  // indicator
+  { 750, 3,    DataSourceDOS::SpriteTypeTransparent },  // font
+  { 810, 3,    DataSourceDOS::SpriteTypeTransparent },  // font_shadow
+  { 870, 3,    DataSourceDOS::SpriteTypeSolid       },  // icon
+  {1250, 3,    DataSourceDOS::SpriteTypeTransparent },  // map_object
+  {1500, 3,    DataSourceDOS::SpriteTypeOverlay     },  // map_shadow
+  {1750, 3,    DataSourceDOS::SpriteTypeSolid       },  // panel_button
+  {1780, 3,    DataSourceDOS::SpriteTypeSolid       },  // frame_bottom
+  {2500, 3,    DataSourceDOS::SpriteTypeTransparent },  // serf_torso
+  {3150, 3,    DataSourceDOS::SpriteTypeTransparent },  // serf_head
+  {3880, 3,    DataSourceDOS::SpriteTypeSolid       },  // frame_split
+  {3900, 0,    DataSourceDOS::SpriteTypeUnknown     },  // sound
+  {3990, 0,    DataSourceDOS::SpriteTypeUnknown     },  // music
+  {3999, 3,    DataSourceDOS::SpriteTypeTransparent },  // cursor
+  {   3, 0,    DataSourceDOS::SpriteTypeUnknown     }   // palette
 };
 
-data_source_dos_t::data_source_dos_t() {
+DataSourceDOS::DataSourceDOS() {
   sprites = NULL;
   sprites_size = 0;
   entry_count = 0;
   animation_table = NULL;
 }
 
-data_source_dos_t::~data_source_dos_t() {
+DataSourceDOS::~DataSourceDOS() {
   if (sprites != NULL) {
     free(sprites);
     sprites = NULL;
@@ -108,7 +108,7 @@ data_source_dos_t::~data_source_dos_t() {
 }
 
 bool
-data_source_dos_t::check(const std::string &path, std::string *load_path) {
+DataSourceDOS::check(const std::string &path, std::string *load_path) {
   const char *default_data_file[] = {
     "SPAE.PA", /* English */
     "SPAF.PA", /* French */
@@ -119,7 +119,8 @@ data_source_dos_t::check(const std::string &path, std::string *load_path) {
 
   for (const char **df = default_data_file; *df != NULL; df++) {
     std::string file_path = path + '/' + *df;
-    LOGI("data", "Looking for game data in '%s'...", file_path.c_str());
+    Log::Info["data"] << "Looking for game data in '"
+                      << file_path.c_str() << "'...";
     if (check_file(file_path)) {
       if (load_path != NULL) {
         *load_path = file_path;
@@ -132,7 +133,7 @@ data_source_dos_t::check(const std::string &path, std::string *load_path) {
 }
 
 bool
-data_source_dos_t::load(const std::string &path) {
+DataSourceDOS::load(const std::string &path) {
   sprites = file_read(path, &sprites_size);
   if (sprites == NULL) {
     return false;
@@ -140,15 +141,15 @@ data_source_dos_t::load(const std::string &path) {
 
   /* Check that data file is decompressed. */
   if (tpwm_is_compressed(sprites, sprites_size)) {
-    LOGV("data", "Data file is compressed");
+    Log::Verbose["data"] << "Data file is compressed";
     void *uncompressed = NULL;
     size_t uncmpsd_size = 0;
     const char *error = NULL;
     if (!tpwm_uncompress(sprites, sprites_size,
                          &uncompressed, &uncmpsd_size,
                          &error)) {
-      LOGE("tpwm", error);
-      LOGE("data", "Data file is broken!");
+      Log::Error["tpwm"] << error;
+      Log::Error["data"] << "Data file is broken!";
       return false;
     }
     free(sprites);
@@ -170,16 +171,17 @@ data_source_dos_t::load(const std::string &path) {
  If size is non-NULL it will be set to the size of the data object.
  (There's no guarantee that size is correct!). */
 void *
-data_source_dos_t::get_object(unsigned int index, size_t *size) {
+DataSourceDOS::get_object(unsigned int index, size_t *size) {
   if (size != NULL) {
     *size = 0;
   }
 
-  if (index <= 0 && index >= entry_count) {
+  // first entry is whole file itself
+  if ((index <= 0) || (index >= entry_count)) {
     return NULL;
   }
 
-  spae_entry_t *entries = reinterpret_cast<spae_entry_t*>(sprites);
+  SpaeEntry *entries = reinterpret_cast<SpaeEntry*>(sprites);
   uint8_t *bytes = reinterpret_cast<uint8_t*>(sprites);
 
   size_t offset = le32toh(entries[index].offset);
@@ -196,8 +198,8 @@ data_source_dos_t::get_object(unsigned int index, size_t *size) {
 
 /* Perform various fixups of the data file entries. */
 void
-data_source_dos_t::fixup() {
-  spae_entry_t *entries = reinterpret_cast<spae_entry_t*>(sprites);
+DataSourceDOS::fixup() {
+  SpaeEntry *entries = reinterpret_cast<SpaeEntry*>(sprites);
 
   /* Fill out some undefined spaces in the index from other
      places in the data file index. */
@@ -235,28 +237,27 @@ data_source_dos_t::fixup() {
  */
 
 /* Create sprite object */
-sprite_t *
-data_source_dos_t::get_sprite(data_res_class_t res, unsigned int index,
-                              int color_off) {
-  if (index >= data_t::get_resource_count(res)) {
+Sprite *
+DataSourceDOS::get_sprite(Data::Resource res, unsigned int index,
+                          int color_off) {
+  if (index >= Data::get_resource_count(res)) {
     return NULL;
   }
 
-  dos_resource_t &dos_res = dos_resources[res];
+  Resource &dos_res = dos_resources[res];
 
-  color_dos_t *palette = get_dos_palette(dos_res.dos_palette);
+  Color *palette = get_dos_palette(dos_res.dos_palette);
   if (palette == NULL) {
     return NULL;
   }
 
-  if (res == data_res_serf_torso) {
+  if (res == Data::AssetSerfTorso) {
     size_t size = 0;
     void *data = get_object(dos_res.index + index, &size);
-    sprite_dos_base_t *torso = new sprite_dos_transparent_t(data, size, palette,
-                                                            color_off);
+    SpriteDosBase *torso = new SpriteDosTransparent(data, size, palette,
+                                                    color_off);
     data = get_object(DATA_SERF_ARMS + index, &size);
-    sprite_dos_base_t *arms = new sprite_dos_transparent_t(data, size, palette,
-                                                           0);
+    SpriteDosBase *arms = new SpriteDosTransparent(data, size, palette, 0);
     torso->stick(arms, 0, 0);
     delete arms;
     return torso;
@@ -268,22 +269,22 @@ data_source_dos_t::get_sprite(data_res_class_t res, unsigned int index,
     return NULL;
   }
 
-  sprite_t *sprite = NULL;
-  switch (dos_res.dos_sprite_type) {
-    case dos_sprite_type_solid: {
-      sprite = new sprite_dos_solid_t(data, size, palette);
+  Sprite *sprite = NULL;
+  switch (dos_res.sprite_type) {
+    case SpriteTypeSolid: {
+      sprite = new SpriteDosSolid(data, size, palette);
       break;
     }
-    case dos_sprite_type_transparent: {
-      sprite = new sprite_dos_transparent_t(data, size, palette, color_off);
+    case SpriteTypeTransparent: {
+      sprite = new SpriteDosTransparent(data, size, palette, color_off);
       break;
     }
-    case dos_sprite_type_overlay: {
-      sprite = new sprite_dos_overlay_t(data, size, palette, 0x80);
+    case SpriteTypeOverlay: {
+      sprite = new SpriteDosOverlay(data, size, palette, 0x80);
       break;
     }
-    case dos_sprite_type_mask: {
-      sprite = new sprite_dos_mask_t(data, size);
+    case SpriteTypeMask: {
+      sprite = new SpriteDosMask(data, size);
       break;
     }
     default:
@@ -293,9 +294,9 @@ data_source_dos_t::get_sprite(data_res_class_t res, unsigned int index,
   return sprite;
 }
 
-sprite_dos_solid_t::sprite_dos_solid_t(void *data, size_t size,
-                                       color_dos_t *palette)
-  : sprite_dos_base_t(data, size) {
+DataSourceDOS::SpriteDosSolid::SpriteDosSolid(void *data, size_t size,
+                                              Color *palette)
+  : SpriteDosBase(data, size) {
   size -= sizeof(dos_sprite_header_t);
   if (size != width * height) {
     assert(0);
@@ -306,7 +307,7 @@ sprite_dos_solid_t::sprite_dos_solid_t(void *data, size_t size,
   uint8_t *dest = this->data;
 
   while (src < end) {
-    color_dos_t color = palette[*src++];
+    Color color = palette[*src++];
     *dest++ = color.b; /* Blue */
     *dest++ = color.g; /* Green */
     *dest++ = color.r; /* Red */
@@ -314,38 +315,39 @@ sprite_dos_solid_t::sprite_dos_solid_t(void *data, size_t size,
   }
 }
 
-sprite_t *
-data_source_dos_t::get_empty_sprite(unsigned int index) {
+Sprite *
+DataSourceDOS::get_empty_sprite(unsigned int index) {
   size_t size = 0;
   void *data = get_object(index, &size);
   if (data == NULL) {
     return NULL;
   }
 
-  return new sprite_dos_empty_t(data, size);
+  return new SpriteDosEmpty(data, size);
 }
 
 /* Create transparent sprite object */
-sprite_t *
-data_source_dos_t::get_transparent_sprite(unsigned int index, int color_off) {
+Sprite *
+DataSourceDOS::get_transparent_sprite(unsigned int index, int color_off) {
   size_t size = 0;
   void *data = get_object(index, &size);
   if (data == NULL) {
     return NULL;
   }
 
-  color_dos_t *palette = get_dos_palette(DATA_PALETTE_GAME);
+  Color *palette = get_dos_palette(DATA_PALETTE_GAME);
   if (palette == NULL) {
     return NULL;
   }
 
-  return new sprite_dos_transparent_t(data, size, palette, color_off);
+  return new SpriteDosTransparent(data, size, palette, color_off);
 }
 
-sprite_dos_transparent_t::sprite_dos_transparent_t(void *data, size_t size,
-                                                   color_dos_t *palette,
-                                                   int color_off)
-  : sprite_dos_base_t(data, size) {
+DataSourceDOS::SpriteDosTransparent::SpriteDosTransparent(void *data,
+                                                          size_t size,
+                                                          Color *palette,
+                                                          int color_off)
+  : SpriteDosBase(data, size) {
   size -= sizeof(dos_sprite_header_t);
   uint8_t *src = reinterpret_cast<uint8_t*>(data) + sizeof(dos_sprite_header_t);
   uint8_t *end = src + size;
@@ -363,7 +365,7 @@ sprite_dos_transparent_t::sprite_dos_transparent_t(void *data, size_t size,
     size_t fill = *src++;
     for (size_t i = 0; i < fill; i++) {
       unsigned int p_index = *src++ + color_off;
-      color_dos_t color = palette[p_index];
+      Color color = palette[p_index];
       *dest++ = color.b; /* Blue */
       *dest++ = color.g; /* Green */
       *dest++ = color.r; /* Red */
@@ -372,26 +374,26 @@ sprite_dos_transparent_t::sprite_dos_transparent_t(void *data, size_t size,
   }
 }
 
-sprite_t *
-data_source_dos_t::get_overlay_sprite(unsigned int index) {
+Sprite *
+DataSourceDOS::get_overlay_sprite(unsigned int index) {
   size_t size = 0;
   void *data = get_object(index, &size);
   if (data == NULL) {
     return NULL;
   }
 
-  color_dos_t *palette = get_dos_palette(DATA_PALETTE_GAME);
+  Color *palette = get_dos_palette(DATA_PALETTE_GAME);
   if (palette == NULL) {
     return NULL;
   }
 
-  return new sprite_dos_overlay_t(data, size, palette, 0x80);
+  return new SpriteDosOverlay(data, size, palette, 0x80);
 }
 
-sprite_dos_overlay_t::sprite_dos_overlay_t(void *data, size_t size,
-                                           color_dos_t *palette,
-                                           unsigned char value)
-  : sprite_dos_base_t(data, size) {
+DataSourceDOS::SpriteDosOverlay::SpriteDosOverlay(void *data, size_t size,
+                                                  Color *palette,
+                                                  unsigned char value)
+  : SpriteDosBase(data, size) {
   size -= sizeof(dos_sprite_header_t);
   uint8_t *src = reinterpret_cast<uint8_t*>(data) + sizeof(dos_sprite_header_t);
   uint8_t *end = src + size;
@@ -408,7 +410,7 @@ sprite_dos_overlay_t::sprite_dos_overlay_t(void *data, size_t size,
 
     size_t fill = *src++;
     for (size_t i = 0; i < fill; i++) {
-      color_dos_t color = palette[value];
+      Color color = palette[value];
       *dest++ = color.b; /* Blue */
       *dest++ = color.g; /* Green */
       *dest++ = color.r; /* Red */
@@ -417,19 +419,19 @@ sprite_dos_overlay_t::sprite_dos_overlay_t(void *data, size_t size,
   }
 }
 
-sprite_t *
-data_source_dos_t::get_mask_sprite(unsigned int index) {
+Sprite *
+DataSourceDOS::get_mask_sprite(unsigned int index) {
   size_t size = 0;
   void *data = get_object(index, &size);
   if (data == NULL) {
     return NULL;
   }
 
-  return new sprite_dos_mask_t(data, size);
+  return new SpriteDosMask(data, size);
 }
 
-sprite_dos_mask_t::sprite_dos_mask_t(void *data, size_t size)
-  : sprite_dos_base_t(data, size) {
+DataSourceDOS::SpriteDosMask::SpriteDosMask(void *data, size_t size)
+  : SpriteDosBase(data, size) {
   size -= sizeof(dos_sprite_header_t);
   uint8_t *src = reinterpret_cast<uint8_t*>(data) + sizeof(dos_sprite_header_t);
   uint8_t *end = src + size;
@@ -455,7 +457,7 @@ sprite_dos_mask_t::sprite_dos_mask_t(void *data, size_t size)
 }
 
 
-sprite_dos_empty_t::sprite_dos_empty_t(void *data, size_t size) {
+DataSourceDOS::SpriteDosEmpty::SpriteDosEmpty(void *data, size_t size) {
   if (size < sizeof(dos_sprite_header_t)) {
     assert(0);
   }
@@ -473,13 +475,13 @@ sprite_dos_empty_t::sprite_dos_empty_t(void *data, size_t size) {
  The resulting sprite will be extended to the height of the mask
  by repeating lines from the top of the sprite. The width of the
  mask and the sprite must be identical. */
-sprite_t *
-sprite_dos_base_t::get_masked(sprite_t *mask) {
+Sprite *
+DataSourceDOS::SpriteDosBase::get_masked(Sprite *mask) {
   if (mask->get_width() > width) {
     assert(0);
   }
 
-  sprite_t *masked = new sprite_dos_base_t(mask);
+  Sprite *masked = new SpriteDosBase(mask);
 
   uint32_t *pos = reinterpret_cast<uint32_t*>(masked->get_data());
 
@@ -503,12 +505,12 @@ sprite_dos_base_t::get_masked(sprite_t *mask) {
   return masked;
 }
 
-sprite_dos_base_t::sprite_dos_base_t(void *data, size_t size)
-  : sprite_dos_empty_t(data, size) {
+DataSourceDOS::SpriteDosBase::SpriteDosBase(void *data, size_t size)
+  : SpriteDosEmpty(data, size) {
   this->data = new uint8_t[width * height * 4];
 }
 
-sprite_dos_base_t::sprite_dos_base_t(sprite_t *base) {
+DataSourceDOS::SpriteDosBase::SpriteDosBase(Sprite *base) {
   width = base->get_width();
   height = base->get_height();
   delta_x = 0;
@@ -518,16 +520,26 @@ sprite_dos_base_t::sprite_dos_base_t(sprite_t *base) {
   data = new uint8_t[width * height * 4];
 }
 
-sprite_dos_base_t::~sprite_dos_base_t() {
+DataSourceDOS::SpriteDosBase::~SpriteDosBase() {
   if (data != NULL) {
     delete[] data;
     data = NULL;
   }
 }
 
+::Color
+DataSourceDOS::get_color(unsigned int index) {
+  DataSourceDOS::Color *palette = get_dos_palette(DATA_PALETTE_GAME);
+  ::Color color = { palette[index].r,
+    palette[index].g,
+    palette[index].r,
+    0xff };
+  return color;
+}
+
 void
-sprite_dos_base_t::stick(sprite_dos_base_t *sticker,
-                         unsigned int x, unsigned int y) {
+DataSourceDOS::SpriteDosBase::stick(DataSourceDOS::SpriteDosBase *sticker,
+                                    unsigned int x, unsigned int y) {
   if ((width != sticker->width) || (height != sticker->height)) {
     assert(0);
     return;
@@ -552,18 +564,8 @@ sprite_dos_base_t::stick(sprite_dos_base_t *sticker,
   delta_y = sticker->delta_y;
 }
 
-color_t
-data_source_dos_t::get_color(unsigned int index) {
-  color_dos_t *palette = get_dos_palette(DATA_PALETTE_GAME);
-  color_t color = { palette[index].b,
-                    palette[index].g,
-                    palette[index].r,
-                    0xff };
-  return color;
-}
-
 bool
-data_source_dos_t::load_animation_table() {
+DataSourceDOS::load_animation_table() {
   /* The serf animation table is stored in big endian
    order in the data file.
 
@@ -587,35 +589,35 @@ data_source_dos_t::load_animation_table() {
   }
 
   if (size != be32toh(animation_block[0])) {
-    LOGE("data", "Could not extract animation table.");
+    Log::Error["data"] << "Could not extract animation table.";
     return false;
   }
   animation_block++;
 
-  animation_table = new animation_t*[200];
+  animation_table = new Animation*[200];
   /* Endianess convert from big endian. */
   for (int i = 0; i < 200; i++) {
     int offset = be32toh(animation_block[i]);
     animation_table[i] =
-      reinterpret_cast<animation_t*>(
+      reinterpret_cast<Animation*>(
         reinterpret_cast<char*>(animation_block) + offset);
   }
 
   return true;
 }
 
-animation_t*
-data_source_dos_t::get_animation(unsigned int animation, unsigned int phase) {
+Animation*
+DataSourceDOS::get_animation(unsigned int animation, unsigned int phase) {
   if (animation > 199) {
     return NULL;
   }
-  animation_t *animation_phase = animation_table[animation] + (phase >> 3);
+  Animation *animation_phase = animation_table[animation] + (phase >> 3);
 
   return animation_phase;
 }
 
 void *
-data_source_dos_t::get_sound(unsigned int index, size_t *size) {
+DataSourceDOS::get_sound(unsigned int index, size_t *size) {
   if (size != NULL) {
     *size = 0;
   }
@@ -623,13 +625,13 @@ data_source_dos_t::get_sound(unsigned int index, size_t *size) {
   size_t sfx_size = 0;
   void *data = get_object(DATA_SFX_BASE + index, &sfx_size);
   if (data == NULL) {
-    LOGE("data", "Could not extract SFX clip: #%d.", index);
+    Log::Error["data"] << "Could not extract SFX clip: #" << index;
     return NULL;
   }
 
   void *wav = sfx2wav(data, sfx_size, size, -0x20);
   if (wav == NULL) {
-    LOGE("data", "Could not convert SFX clip to WAV: #%d.", index);
+    Log::Error["data"] << "Could not convert SFX clip to WAV: #" << index;
     return NULL;
   }
 
@@ -637,7 +639,7 @@ data_source_dos_t::get_sound(unsigned int index, size_t *size) {
 }
 
 void *
-data_source_dos_t::get_music(unsigned int index, size_t *size) {
+DataSourceDOS::get_music(unsigned int index, size_t *size) {
   if (size != NULL) {
     *size = 0;
   }
@@ -645,37 +647,37 @@ data_source_dos_t::get_music(unsigned int index, size_t *size) {
   size_t xmi_size = 0;
   void *data = get_object(DATA_MUSIC_GAME + index, &xmi_size);
   if (data == NULL) {
-    LOGE("data", "Could not extract XMI clip: #%d.", index);
+    Log::Error["data"] << "Could not extract XMI clip: #" << index;
     return NULL;
   }
 
   void *mid = xmi2mid(data, xmi_size, size);
   if (mid == NULL) {
-    LOGE("data", "Could not convert XMI clip to MID: #%d.", index);
+    Log::Error["data"] << "Could not convert XMI clip to MID: #" << index;
     return NULL;
   }
 
   return mid;
 }
 
-color_dos_t *
-data_source_dos_t::get_dos_palette(unsigned int index) {
+DataSourceDOS::Color *
+DataSourceDOS::get_dos_palette(unsigned int index) {
   size_t size = 0;
   void *data = get_object(index, &size);
-  if ((data == NULL) || (size != sizeof(color_dos_t)*256)) {
+  if ((data == NULL) || (size != sizeof(Color)*256)) {
     return NULL;
   }
 
-  return reinterpret_cast<color_dos_t*>(data);
+  return reinterpret_cast<Color*>(data);
 }
 
-palette_dos_t::palette_dos_t(color_dos_t *palette_dos) {
-  this->palette_dos = palette_dos;
+DataSourceDOS::PaletteDOS::PaletteDOS(DataSourceDOS::Color *_palette_dos) {
+  palette_dos = _palette_dos;
 }
 
-color_t
-palette_dos_t::get_color(size_t index) const {
-  color_t color = {0, 0, 0, 0};
+Color
+DataSourceDOS::PaletteDOS::get_color(size_t index) const {
+  ::Color color = {0, 0, 0, 0};
 
   if (index < 256) {
     color.red = palette_dos[index].r;
@@ -686,8 +688,8 @@ palette_dos_t::get_color(size_t index) const {
   return color;
 }
 
-palette_t *
-data_source_dos_t::get_palette(unsigned int index) {
+Palette *
+DataSourceDOS::get_palette(unsigned int index) {
   if (index > 2) {
     return NULL;
   }
@@ -698,5 +700,5 @@ data_source_dos_t::get_palette(unsigned int index) {
     3998
   };
 
-  return new palette_dos_t(get_dos_palette(palettes[index]));
+  return new PaletteDOS(get_dos_palette(palettes[index]));
 }

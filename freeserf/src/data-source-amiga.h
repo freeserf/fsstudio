@@ -27,7 +27,7 @@
 
 #include "src/data-source.h"
 
-class sprite_amiga_t : public sprite_t {
+class SpriteAmiga : public Sprite {
  protected:
   unsigned int width;
   unsigned int height;
@@ -38,8 +38,8 @@ class sprite_amiga_t : public sprite_t {
   uint8_t *data;
 
  public:
-  sprite_amiga_t(unsigned int width, unsigned int height);
-  virtual ~sprite_amiga_t();
+  SpriteAmiga(unsigned int width, unsigned int height);
+  virtual ~SpriteAmiga();
 
   virtual uint8_t *get_data() const { return data; }
   virtual unsigned int get_width() const { return width; }
@@ -49,54 +49,53 @@ class sprite_amiga_t : public sprite_t {
   virtual int get_offset_x() const { return offset_x; }
   virtual int get_offset_y() const { return offset_y; }
 
-  virtual sprite_t *get_masked(sprite_t *mask);
+  virtual Sprite *get_masked(Sprite *mask);
 
   void set_delta(int x, int y) { delta_x = x; delta_y = y; }
   void set_offset(int x, int y) { offset_x = x; offset_y = y; }
-  sprite_amiga_t *get_amiga_masked(sprite_t *mask);
+  SpriteAmiga *get_amiga_masked(Sprite *mask);
   void clear() {}
-  color_t *get_writable_data() { return reinterpret_cast<color_t*>(data); }
+  Color *get_writable_data() { return reinterpret_cast<Color*>(data); }
 
   void make_transparent(uint32_t rc = 0);
-  sprite_amiga_t *merge_horizontaly(sprite_amiga_t *right);
-  sprite_amiga_t *split_horizontaly(bool return_right);
-  void stick(sprite_amiga_t *sticker, unsigned int x, unsigned int y);
-  void fill(color_t color);
-  void fill_masked(color_t color);
+  SpriteAmiga *merge_horizontaly(SpriteAmiga *right);
+  SpriteAmiga *split_horizontaly(bool return_right);
+  void stick(SpriteAmiga *sticker, unsigned int x, unsigned int y);
+  void fill(Color color);
+  void fill_masked(Color color);
 };
 
-class palette_amiga_t : public palette_t {
+class PaletteAmiga : public Palette {
  protected:
   uint8_t *palette_amiga;
 
  public:
-  explicit palette_amiga_t(uint8_t *palette_amiga);
-  virtual ~palette_amiga_t() {}
+  explicit PaletteAmiga(uint8_t *palette_amiga);
+  virtual ~PaletteAmiga() {}
 
   virtual size_t get_size() const { return 32; }
-  virtual color_t get_color(size_t index) const;
+  virtual Color get_color(size_t index) const;
 };
 
-class data_source_amiga_t : public data_source_t {
+class DataSourceAmiga : public DataSource {
  public:
-  data_source_amiga_t();
-  virtual ~data_source_amiga_t();
+  DataSourceAmiga();
+  virtual ~DataSourceAmiga();
 
   virtual bool check(const std::string &path, std::string *load_path);
   virtual bool load(const std::string &path);
 
-  virtual sprite_t *get_sprite(data_res_class_t res, unsigned int index,
-                               int color_off);
+  virtual Sprite *get_sprite(Data::Resource res, unsigned int index,
+                             int color_off);
 
-  virtual color_t get_color(unsigned int index);
+  virtual Color get_color(unsigned int index);
 
-  virtual animation_t *get_animation(unsigned int animation,
-                                     unsigned int phase);
+  virtual Animation *get_animation(unsigned int animation, unsigned int phase);
 
   virtual void *get_sound(unsigned int index, size_t *size);
   virtual void *get_music(unsigned int index, size_t *size);
 
-  virtual palette_t *get_palette(unsigned int index);
+  virtual Palette *get_palette(unsigned int index);
 
  private:
   void *gfxfast;
@@ -118,38 +117,38 @@ class data_source_amiga_t : public data_source_t {
   unsigned char *get_data_from_catalog(size_t catalog_index, size_t index,
                                        void *base);
 
-  sprite_amiga_t *get_menu_sprite(unsigned int index, void *block,
-                                  unsigned int width, unsigned int height,
-                                  unsigned char compression,
-                                  unsigned char filling);
-  sprite_t *get_icon_sprite(unsigned int index);
-  sprite_amiga_t *get_ground_sprite(unsigned int index);
-  sprite_t *get_ground_mask_sprite(unsigned int index);
-  sprite_amiga_t *get_mirrored_horizontaly_sprite(sprite_t *sprite);
-  sprite_t *get_path_mask_sprite(unsigned int index);
-  sprite_t *get_game_object_sprite(unsigned int catalog, unsigned int index);
-  sprite_t *get_torso_sprite(unsigned int index);
-  sprite_t *get_map_object_sprite(unsigned int index);
-  sprite_t *get_map_object_shadow(unsigned int index);
-  sprite_amiga_t *get_hud_sprite(unsigned int index);
+  SpriteAmiga *get_menu_sprite(unsigned int index, void *block,
+                               unsigned int width, unsigned int height,
+                               unsigned char compression,
+                               unsigned char filling);
+  Sprite *get_icon_sprite(unsigned int index);
+  SpriteAmiga *get_ground_sprite(unsigned int index);
+  Sprite *get_ground_mask_sprite(unsigned int index);
+  SpriteAmiga *get_mirrored_horizontaly_sprite(Sprite *sprite);
+  Sprite *get_path_mask_sprite(unsigned int index);
+  Sprite *get_game_object_sprite(unsigned int catalog, unsigned int index);
+  Sprite *get_torso_sprite(unsigned int index);
+  Sprite *get_map_object_sprite(unsigned int index);
+  Sprite *get_map_object_shadow(unsigned int index);
+  SpriteAmiga *get_hud_sprite(unsigned int index);
 
-  sprite_amiga_t *decode_planned_sprite(void *data,
-                                        unsigned int width, unsigned int height,
+  SpriteAmiga *decode_planned_sprite(void *data,
+                                     unsigned int width, unsigned int height,
+                                     uint8_t compression,
+                                     uint8_t filling, uint8_t *palette,
+                                     bool invert = true);
+  SpriteAmiga *decode_interlased_sprite(void *data,
+                                        unsigned int width,
+                                        unsigned int height,
                                         uint8_t compression,
                                         uint8_t filling, uint8_t *palette,
-                                        bool invert = true);
-  sprite_amiga_t *decode_interlased_sprite(void *data,
-                                           unsigned int width,
-                                           unsigned int height,
-                                           uint8_t compression,
-                                           uint8_t filling, uint8_t *palette,
-                                           size_t skip_lines = 0);
-  sprite_amiga_t *decode_amiga_sprite(void *data,
-                                      unsigned int width,
-                                      unsigned int height,
-                                      uint8_t *palette);
-  sprite_amiga_t *decode_mask_sprite(void *data,
-                                     unsigned int width, unsigned int height);
+                                        size_t skip_lines = 0);
+  SpriteAmiga *decode_amiga_sprite(void *data,
+                                   unsigned int width,
+                                   unsigned int height,
+                                   uint8_t *palette);
+  SpriteAmiga *decode_mask_sprite(void *data,
+                                  unsigned int width, unsigned int height);
 
   unsigned int bitplane_count_from_compression(unsigned char compression);
 

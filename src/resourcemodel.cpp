@@ -81,12 +81,12 @@ FSSResourceModel::parent(const QModelIndex &index) const {
 int
 FSSResourceModel::rowCount(const QModelIndex &parent) const {
   if (!parent.isValid()) {
-    return static_cast<int>(data_res_palette);
+    return static_cast<int>(Data::AssetPalette);
   }
 
   QModelIndex p = parent.parent();
   if (!p.isValid()) {
-    return data_t::get_resource_count((data_res_class_t)(parent.row() + 1));
+    return Data::get_resource_count((Data::Resource)(parent.row() + 1));
   }
 
   return 0;
@@ -99,8 +99,8 @@ FSSResourceModel::columnCount(const QModelIndex & /*parent*/) const {
 
 QString
 FSSResourceModel::getResName(int res) const {
-  data_res_class_t rclass = (data_res_class_t)res;
-  const char *name = data_t::get_resource_name(rclass);
+  Data::Resource rclass = (Data::Resource)res;
+  const char *name = Data::get_resource_name(rclass);
   return QString::fromLatin1(name);
 }
 
@@ -108,8 +108,8 @@ QString
 FSSResourceModel::getResTypeName(int res) const {
   const char *types[] = { "unknown", "sprite", "animation",
                           "sound", "music", "palette" };
-  data_res_class_t rclass = (data_res_class_t)res;
-  const char *name = types[data_t::get_resource_type(rclass)];
+  Data::Resource rclass = (Data::Resource)res;
+  const char *name = types[Data::get_resource_type(rclass)];
   return QString::fromLatin1(name);
 }
 

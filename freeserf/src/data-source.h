@@ -35,9 +35,9 @@
 #include "src/data.h"
 
 /* Sprite object. Contains BGRA data. */
-class sprite_t {
+class Sprite {
  public:
-  virtual ~sprite_t() {}
+  virtual ~Sprite() {}
 
   virtual uint8_t *get_data() const = 0;
   virtual unsigned int get_width() const = 0;
@@ -47,54 +47,54 @@ class sprite_t {
   virtual int get_offset_x() const = 0;
   virtual int get_offset_y() const = 0;
 
-  virtual sprite_t *get_masked(sprite_t *mask) = 0;
+  virtual Sprite *get_masked(Sprite *mask) = 0;
 
   static uint64_t create_sprite_id(uint64_t resource, uint64_t index,
                                    uint64_t mask_resource, uint64_t mask_index,
                                    uint64_t offset);
 };
 
-class animation_t {
+class Animation {
  public:
   uint8_t time;
   int8_t x;
   int8_t y;
 };
 
-typedef struct {
+typedef struct Color {
   unsigned char blue;
   unsigned char green;
   unsigned char red;
   unsigned char alpha;
-} color_t;
+} Color;
 
-class palette_t {
+class Palette {
  public:
-  virtual ~palette_t() {}
+  virtual ~Palette() {}
 
   virtual size_t get_size() const = 0;
-  virtual color_t get_color(size_t index) const = 0;
+  virtual Color get_color(size_t index) const = 0;
 };
 
-class data_source_t {
+class DataSource {
  public:
-  virtual ~data_source_t() {}
+  virtual ~DataSource() {}
 
   virtual bool check(const std::string &path, std::string *load_path) = 0;
   virtual bool load(const std::string &path) = 0;
 
-  virtual sprite_t *get_sprite(data_res_class_t res, unsigned int index,
-                               int color_off) = 0;
+  virtual Sprite *get_sprite(Data::Resource res, unsigned int index,
+                             int color_off) = 0;
 
-  virtual color_t get_color(unsigned int index) = 0;
+  virtual Color get_color(unsigned int index) = 0;
 
-  virtual animation_t *get_animation(unsigned int animation,
-                                     unsigned int phase) = 0;
+  virtual Animation *get_animation(unsigned int animation,
+                                   unsigned int phase) = 0;
 
   virtual void *get_sound(unsigned int index, size_t *size) = 0;
   virtual void *get_music(unsigned int index, size_t *size) = 0;
 
-  virtual palette_t *get_palette(unsigned int index) = 0;
+  virtual Palette *get_palette(unsigned int index) = 0;
 
   bool check_file(const std::string &path);
   void *file_read(const std::string &path, size_t *size);

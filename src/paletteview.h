@@ -26,13 +26,13 @@
 
 #include "src/data-source.h"
 
-class palette_t;
+class Palette;
 
 class FSSPaletteModel : public QAbstractItemModel {
   Q_OBJECT
 
  protected:
-  palette_t *palette;
+  Palette *palette;
 
  public:
   explicit FSSPaletteModel(QObject *parent = 0);
@@ -52,7 +52,7 @@ class FSSPaletteModel : public QAbstractItemModel {
   QVariant data(const QModelIndex &index,
                 int role = Qt::DisplayRole) const override;
 
-  void setPalette(palette_t *_palette);
+  void setPalette(Palette *_palette);
 };
 
 class FSSPaletteView : public QTableView {
@@ -60,13 +60,13 @@ class FSSPaletteView : public QTableView {
 
  protected:
   FSSPaletteModel *model;
-  palette_t *palette;
+  Palette *palette;
 
  public:
   explicit FSSPaletteView(QWidget *pParent = NULL);
   virtual ~FSSPaletteView();
 
-  void setPalette(palette_t *palette);
+  void setPalette(Palette *palette);
 
  public slots:
   void on_copy_color(const QModelIndex &index);

@@ -35,8 +35,8 @@
 #include "src/data-source-dos.h"
 #include "src/data-source-amiga.h"
 
-data_source_t *data_source_dos;
-data_source_t *data_source_amiga;
+DataSource *data_source_dos;
+DataSource *data_source_amiga;
 
 FSSMainWindow::FSSMainWindow(QWidget *parent)
   : QMainWindow(parent)
@@ -56,7 +56,7 @@ FSSMainWindow::FSSMainWindow(QWidget *parent)
   path += "/.local/share/freeserf";
   QString path_dos = path + "/spae.pa";
 
-  data_source_dos = new data_source_dos_t();
+  data_source_dos = new DataSourceDOS();
   if (!data_source_dos->load(path_dos.toLocal8Bit().data())) {
     delete data_source_dos;
     data_source_dos = NULL;
@@ -64,7 +64,7 @@ FSSMainWindow::FSSMainWindow(QWidget *parent)
     viewSources->addSource(data_source_dos);
   }
 
-  data_source_amiga = new data_source_amiga_t();
+  data_source_amiga = new DataSourceAmiga();
   if (!data_source_amiga->load(path.toLocal8Bit().data())) {
     delete data_source_amiga;
     data_source_amiga = NULL;
@@ -76,8 +76,8 @@ FSSMainWindow::FSSMainWindow(QWidget *parent)
           SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)),
           SLOT(onCurrentChanged(const QModelIndex&, const QModelIndex&)));
 
-  connect(this, SIGNAL(resourceSelected(data_res_class_t, unsigned int)),
-          viewSources, SLOT(onResourceSelected(data_res_class_t,
+  connect(this, SIGNAL(resourceSelected(Data::Resource, unsigned int)),
+          viewSources, SLOT(onResourceSelected(Data::Resource,
                                                unsigned int)));
 }
 
@@ -87,11 +87,11 @@ FSSMainWindow::~FSSMainWindow() {
 void
 FSSMainWindow::onCurrentChanged(const QModelIndex &current,
                                const QModelIndex & /*previous*/) {
-  data_res_class_t resource_class = data_res_none;
+  Data::Resource resource_class = Data::AssetNone;
   unsigned int index = 0;
 
   if (current.parent().isValid()) {
-      resource_class = (data_res_class_t)(current.parent().row() + 1);
+      resource_class = (Data::Resource)(current.parent().row() + 1);
       index = current.row();
   }
 

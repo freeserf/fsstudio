@@ -88,7 +88,7 @@ FSSPaletteModel::data(const QModelIndex &index, int role) const {
   switch (role) {
     case Qt::DisplayRole:
       if (index.column() < 3) {
-        color_t color = palette->get_color(index.row());
+        Color color = palette->get_color(index.row());
         QString text;
         switch (index.column()) {
           case 0:
@@ -106,7 +106,7 @@ FSSPaletteModel::data(const QModelIndex &index, int role) const {
       break;
     case Qt::BackgroundColorRole:
       if (index.column() == 3) {
-        color_t color = palette->get_color(index.row());
+        Color color = palette->get_color(index.row());
         data = QVariant(QColor(color.red, color.green, color.blue));
       }
       break;
@@ -116,7 +116,7 @@ FSSPaletteModel::data(const QModelIndex &index, int role) const {
 }
 
 void
-FSSPaletteModel::setPalette(palette_t *_palette) {
+FSSPaletteModel::setPalette(Palette *_palette) {
   beginResetModel();
   palette = _palette;
   endResetModel();
@@ -145,7 +145,7 @@ FSSPaletteView::~FSSPaletteView() {
 }
 
 void
-FSSPaletteView::setPalette(palette_t *_palette) {
+FSSPaletteView::setPalette(Palette *_palette) {
   if (palette != NULL) {
     delete palette;
     palette = NULL;
@@ -162,7 +162,7 @@ FSSPaletteView::setPalette(palette_t *_palette) {
 void
 FSSPaletteView::on_copy_color(const QModelIndex &index) {
   if (palette != NULL) {
-    color_t color = palette->get_color(index.row());
+    Color color = palette->get_color(index.row());
     QString text;
     text.sprintf("0x%02x, 0x%02x, 0x%02x", color.red, color.green, color.blue);
     QClipboard *clipboard = QApplication::clipboard();

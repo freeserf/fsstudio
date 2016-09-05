@@ -41,7 +41,7 @@ class FSSMainWindow : public QMainWindow {
   FSSResourceModel *resourceModel;
 
  signals:
-  void resourceSelected(data_res_class_t resource_class,
+  void resourceSelected(Data::Resource resource_class,
                         unsigned int index);
 
  public slots:

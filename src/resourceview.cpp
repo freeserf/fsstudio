@@ -32,8 +32,9 @@
 #include "src/spriteview.h"
 #include "src/paletteview.h"
 #include "src/audioview.h"
+#include "src/animationview.h"
 
-FSSResourceView::FSSResourceView(data_source_t *source,
+FSSResourceView::FSSResourceView(DataSource *source,
                                  QWidget *parent)
   : QWidget(parent) {
   this->source = source;
@@ -60,6 +61,10 @@ FSSResourceView::FSSResourceView(data_source_t *source,
   viewAudio->setMinimumSize(200, 200);
   resourcesStack->addWidget(viewAudio);
 
+  viewAnimation = new FSSAnimationView(this);
+  viewAnimation->setMinimumSize(200, 200);
+  resourcesStack->addWidget(viewAnimation);
+
   QToolBar *toolBar = new QToolBar(this);
   toolBar->addAction(QIcon(":/icons/disk-icon.png"), "Save", this, &FSSResourceView::on_save);
   toolBar->addAction(QIcon(":/icons/clipboard-icon.png"), "Copy", this, &FSSResourceView::on_copy);
@@ -74,7 +79,7 @@ FSSResourceView::~FSSResourceView() {
 }
 
 QString
-spriteInfo(sprite_t *sprite) {
+spriteInfo(Sprite *sprite) {
   QString str("Sprite:\n");
   if (NULL != sprite) {
     str += "width = ";
@@ -94,15 +99,15 @@ spriteInfo(sprite_t *sprite) {
 }
 
 void
-FSSResourceView::onResourceSelected(data_res_class_t resource_class,
+FSSResourceView::onResourceSelected(Data::Resource resource_class,
                                     unsigned int index) {
   QWidget *resView = NULL;
   QString info;
 
-  if (resource_class != data_res_none) {
-    switch (data_t::get_resource_type(resource_class)) {
-      case data_type_sprite: {
-        sprite_t *sprite = source->get_sprite(resource_class, index, 0);
+  if (resource_class != Data::AssetNone) {
+    switch (Data::get_resource_type(resource_class)) {
+      case Data::TypeSprite: {
+        Sprite *sprite = source->get_sprite(resource_class, index, 0);
         viewSprite->setSprite(sprite);
         if (sprite != NULL) {
           info = spriteInfo(sprite);
@@ -110,26 +115,30 @@ FSSResourceView::onResourceSelected(data_res_class_t resource_class,
         resView = viewSprite;
         break;
       }
-      case data_type_animation: {
+      case Data::TypeAnimation: {
+//        Animation animation = source->get_animation(index);
+//        viewAnimation->setAnimation(&animation);
+//        info.sprintf("size = %lu", animation.get_size());
+//        resView = viewAnimation;
         resView = viewEmpty;
         break;
       }
-      case data_type_sound: {
+      case Data::TypeSound: {
         size_t size = 0;
         void *data = source->get_sound(index, &size);
         viewAudio->setAudioData(data, size, "wav");
         resView = viewAudio;
         break;
       }
-      case data_type_music: {
+      case Data::TypeMusic: {
         size_t size = 0;
         void *data = source->get_music(index, &size);
         viewAudio->setAudioData(data, size, "mid");
         resView = viewAudio;
         break;
       }
-      case data_type_palette: {
-        palette_t *palette = source->get_palette(index);
+      case Data::TypePalette: {
+        Palette *palette = source->get_palette(index);
         viewPalette->setPalette(palette);
         if (palette != NULL) {
           info = QString::asprintf("Palette:\n%zu colors",
@@ -138,7 +147,7 @@ FSSResourceView::onResourceSelected(data_res_class_t resource_class,
         resView = viewPalette;
         break;
       }
-      case data_type_unknown: {
+      case Data::TypeUnknown: {
         resView = viewEmpty;
         break;
       }

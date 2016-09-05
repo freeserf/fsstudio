@@ -1,5 +1,5 @@
 /*
- * sourcesview.h - FSSSourcesView declaration
+ * paletteview.h - FSSPaletteView declaration
  *
  * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
  *
@@ -19,31 +19,24 @@
  * along with FSStudio.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_SOURCESVIEW_H_
-#define SRC_SOURCESVIEW_H_
+#ifndef SRC_ANIMATIONVIEW_H_
+#define SRC_ANIMATIONVIEW_H_
 
-#include <QSplitter>
-#include <QList>
+#include <QLabel>
 
-#include "src/data.h"
+#include "src/data-source.h"
 
-class FSSResourceView;
-
-class FSSSourcesView : public QSplitter {
+class FSSAnimationView : public QLabel {
   Q_OBJECT
 
  protected:
-  QList<FSSResourceView*> sourceViews;
+  const Animation *animation;
 
  public:
-  explicit FSSSourcesView(QWidget *parent = 0);
+  explicit FSSAnimationView(QWidget *pParent = NULL);
+  virtual ~FSSAnimationView();
 
- signals:
-  void resourceSelected(Data::Resource resource_class, unsigned int index);
-
- public slots:
-  void addSource(DataSource *source);
-  void onResourceSelected(Data::Resource resource_class, unsigned int index);
+  void setAnimation(const Animation *animation);
 };
 
-#endif  // SRC_SOURCESVIEW_H_
+#endif  // SRC_ANIMATIONVIEW_H_

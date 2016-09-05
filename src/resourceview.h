@@ -26,18 +26,19 @@
 
 #include "src/data.h"
 
-class data_source_t;
+class DataSource;
 class QTextBrowser;
 class FSSSpriteView;
 class FSSPaletteView;
 class FSSAudioView;
+class FSSAnimationView;
 class QStackedLayout;
 
 class FSSResourceView : public QWidget {
   Q_OBJECT
 
  protected:
-  data_source_t *source;
+  DataSource *source;
 
   QStackedLayout *resourcesStack;
   QTextBrowser *textBrowser;
@@ -45,14 +46,15 @@ class FSSResourceView : public QWidget {
   FSSSpriteView *viewSprite;
   FSSPaletteView *viewPalette;
   FSSAudioView *viewAudio;
+  FSSAnimationView *viewAnimation;
   QWidget *viewEmpty;
 
  public:
-  explicit FSSResourceView(data_source_t *source, QWidget *parent = 0);
+  explicit FSSResourceView(DataSource *source, QWidget *parent = 0);
   virtual ~FSSResourceView();
 
  public slots:
-  void onResourceSelected(data_res_class_t resource_class,
+  void onResourceSelected(Data::Resource resource_class,
                           unsigned int index);
   void on_save();
   void on_copy();

@@ -190,7 +190,7 @@ uint8_t palette3[] = {
   0xDD, 0xFF, 0xFF,  // 31
 };
 
-data_source_amiga_t::data_source_amiga_t()
+DataSourceAmiga::DataSourceAmiga()
   : gfxfast(NULL)
   , gfxchip(NULL)
   , sound(NULL)
@@ -199,11 +199,11 @@ data_source_amiga_t::data_source_amiga_t()
   , icon_catalog(NULL) {
 }
 
-data_source_amiga_t::~data_source_amiga_t() {
+DataSourceAmiga::~DataSourceAmiga() {
 }
 
 bool
-data_source_amiga_t::check(const std::string &path, std::string *res_path) {
+DataSourceAmiga::check(const std::string &path, std::string *res_path) {
   const char *data_files[] = {
     "gfxheader",  // catalog file
     "gfxfast",    // fast graphics file
@@ -213,7 +213,7 @@ data_source_amiga_t::check(const std::string &path, std::string *res_path) {
 
   for (const char **df = data_files; *df != NULL; df++) {
     std::string cp = path + '/' + *df;
-    LOGI("data", "Looking for game data in '%s'...", cp.c_str());
+    Log::Info["data"] << "Looking for game data in '" << cp << "'...";
     if (!check_file(cp)) {
       return false;
     }
@@ -227,7 +227,7 @@ data_source_amiga_t::check(const std::string &path, std::string *res_path) {
 }
 
 bool
-data_source_amiga_t::load(const std::string &path) {
+DataSourceAmiga::load(const std::string &path) {
   size_t data_size = 0;
   void *data = file_read(path + "/gfxfast", &data_size);
   if (NULL == data) {
@@ -238,7 +238,8 @@ data_source_amiga_t::load(const std::string &path) {
   gfxfast = unpack(data, data_size, &gfxfast_size);
   free(data);
   data = NULL;
-  LOGD("data", "Data file 'gfxfast' loaded (size = %d)", gfxfast_size);
+  Log::Debug["data"] << "Data file 'gfxfast' loaded (size = "
+                     << gfxfast_size << ")";
 
   data_size = 0;
   data = file_read(path + "/gfxchip", &data_size);
@@ -250,7 +251,8 @@ data_source_amiga_t::load(const std::string &path) {
   gfxchip = unpack(data, data_size, &gfxchip_size);
   free(data);
   data = NULL;
-  LOGD("data", "Data file 'gfxchip' loaded (size = %d)", gfxchip_size);
+  Log::Debug["data"] << "Data file 'gfxchip' loaded (size = "
+                     << gfxchip_size << ")";
 
   size_t gfxheader_size = 0;
   uint32_t *gfxheader =
@@ -316,7 +318,7 @@ data_source_amiga_t::load(const std::string &path) {
   if (sound != NULL) {
     decode(sound, sound_size);
   } else {
-    LOGW("data", "Unable to load sound data.");
+    Log::Warn["data"] << "Unable to load sound data.";
   }
 
   data = file_read(path + "/music", &data_size);
@@ -325,7 +327,7 @@ data_source_amiga_t::load(const std::string &path) {
     music = unpack(data, data_size, &music_size);
     free(data);
   } else {
-    LOGW("data", "Unable to load music data.");
+    Log::Warn["data"] << "Unable to load music data.";
   }
 
   gfxpics = file_read(path + "/gfxpics", &sound_size);
@@ -339,20 +341,20 @@ data_source_amiga_t::load(const std::string &path) {
   return true;
 }
 
-sprite_t *
-data_source_amiga_t::get_sprite(data_res_class_t res, unsigned int index,
-                                int color_off) {
-  sprite_t *sprite = NULL;
+Sprite *
+DataSourceAmiga::get_sprite(Data::Resource res, unsigned int index,
+                            int color_off) {
+  Sprite *sprite = NULL;
   switch (res) {
-    case data_res_art_landscape:
+    case Data::AssetArtLandscape:
       break;
-    case data_res_serf_shadow:
+    case Data::AssetSerfShadow:
       break;
-    case data_res_dotted_lines:
+    case Data::AssetDottedLines:
       break;
-    case data_res_art_flag:
+    case Data::AssetArtFlag:
       break;
-    case data_res_art_box:
+    case Data::AssetArtBox:
       if (gfxpics != NULL) {
         pics_t::iterator it = pics.find(index);
         if (it != pics.end()) {
@@ -369,43 +371,43 @@ data_source_amiga_t::get_sprite(data_res_class_t res, unsigned int index,
         }
       }
       break;
-    case data_res_credits_bg:
+    case Data::AssetCreditsBg:
       sprite = decode_interlased_sprite(data_pointers[23], 40, 200,
                                         0, 0, palette);
       break;
-    case data_res_logo: {
+    case Data::AssetLogo: {
       uint8_t *data = reinterpret_cast<uint8_t*>(gfxfast);
       data += 188356;
       sprite = decode_interlased_sprite(data, 64/8, 96, 0, 0, palette);
       break;
     }
-    case data_res_symbol: {
+    case Data::AssetSymbol: {
       uint8_t *data = reinterpret_cast<uint8_t*>(gfxfast);
       data += 178116 + (640*index);
       sprite = decode_interlased_sprite(data, 32/8, 32, 0, 0, palette);
       break;
     }
-    case data_res_map_mask_up:
+    case Data::AssetMapMaskUp:
       sprite = get_ground_mask_sprite(index);
       break;
-    case data_res_map_mask_down: {
-      sprite_t *mask = get_ground_mask_sprite(index);
+    case Data::AssetMapMaskDown: {
+      Sprite *mask = get_ground_mask_sprite(index);
       if (mask != NULL) {
-        sprite_amiga_t *s = get_mirrored_horizontaly_sprite(mask);
+        SpriteAmiga *s = get_mirrored_horizontaly_sprite(mask);
         s->set_offset(0, -(static_cast<int>(s->get_height()) - 1));
         delete mask;
         sprite = s;
       }
       break;
     }
-    case data_res_path_mask:
+    case Data::AssetPathMask:
       sprite = get_path_mask_sprite(index);
       break;
-    case data_res_map_ground: {
-      sprite_amiga_t *s = NULL;
+    case Data::AssetMapGround: {
+      SpriteAmiga *s = NULL;
       if (index == 32) {
-        s = new sprite_amiga_t(32, 21);
-        color_t c = {0xBB, 0x00, 0x00, 0xFF};
+        s = new SpriteAmiga(32, 21);
+        Color c = {0xBB, 0x00, 0x00, 0xFF};
         s->fill(c);
       } else {
         s = get_ground_sprite(index);
@@ -413,13 +415,13 @@ data_source_amiga_t::get_sprite(data_res_class_t res, unsigned int index,
       sprite = s;
       break;
     }
-    case data_res_path_ground:
+    case Data::AssetPathGround:
       sprite = get_ground_sprite(index);
       break;
-    case data_res_game_object:
+    case Data::AssetGameObject:
       sprite = get_game_object_sprite(15, index+1);
       break;
-    case data_res_frame_top:
+    case Data::AssetFrameTop:
       if (index < 2) {
         sprite = decode_amiga_sprite(
                                  reinterpret_cast<uint8_t*>(data_pointers[22]) +
@@ -429,36 +431,35 @@ data_source_amiga_t::get_sprite(data_res_class_t res, unsigned int index,
         sprite = decode_planned_sprite(data_pointers[21], 39, 8, 24, 24,
                                        palette);
       } else if (index == 3) {
-        sprite_amiga_t *left = decode_interlased_sprite(data_pointers[7], 2,
-                                                        216, 0, 0, palette);
-        sprite_amiga_t *right = decode_interlased_sprite(
+        SpriteAmiga *left = decode_interlased_sprite(data_pointers[7], 2,
+                                                     216, 0, 0, palette);
+        SpriteAmiga *right = decode_interlased_sprite(
                             reinterpret_cast<uint8_t*>(data_pointers[7]) + 2160,
-                                                         2, 216, 0, 0, palette);
+                                                       2, 216, 0, 0, palette);
         sprite = left->merge_horizontaly(right);
         delete left;
         delete right;
       }
       break;
-    case data_res_map_border: {
+    case Data::AssetMapBorder: {
       uint8_t *data = reinterpret_cast<uint8_t*>(data_pointers[8]) +
                       index * 120;
-      sprite_amiga_t *s = decode_interlased_sprite(data, 2, 6, 0, 0, palette);
-      sprite_amiga_t *m = decode_interlased_sprite(data + 60, 2, 6, 0, 0,
-                                                   palette);
+      SpriteAmiga *s = decode_interlased_sprite(data, 2, 6, 0, 0, palette);
+      SpriteAmiga *m = decode_interlased_sprite(data + 60, 2, 6, 0, 0, palette);
       m->make_transparent();
       sprite = s->get_masked(m);
       break;
     }
-    case data_res_map_waves: {
+    case Data::AssetMapWaves: {
       uint8_t *data = reinterpret_cast<uint8_t*>(data_pointers[9]) +
                       index * 228;
-      sprite_amiga_t *s = decode_interlased_sprite(data, 6, 19, 28, 5, palette);
+      SpriteAmiga *s = decode_interlased_sprite(data, 6, 19, 28, 5, palette);
       s->make_transparent(0x0000BB);
       s->set_delta(1, 0);
       sprite = s;
       break;
     }
-    case data_res_frame_popup:
+    case Data::AssetFramePopup:
       if (index == 0) {
         sprite = decode_interlased_sprite(data_pointers[10], 18, 9, 0, 0,
                                           palette, 1);
@@ -467,13 +468,13 @@ data_source_amiga_t::get_sprite(data_res_class_t res, unsigned int index,
                             reinterpret_cast<uint8_t*>(data_pointers[10]) + 972,
                                           18, 7, 0, 0, palette, 1);
       } else if (index > 1) {
-        sprite_amiga_t *s = decode_interlased_sprite(data_pointers[11], 2, 144,
-                                                     0, 0, palette);
+        SpriteAmiga *s = decode_interlased_sprite(data_pointers[11], 2, 144,
+                                                  0, 0, palette);
         sprite = s->split_horizontaly(index == 3);
         delete s;
       }
       break;
-    case data_res_indicator:
+    case Data::AssetIndicator:
 //      sprite = decode_planned_sprite(reinterpret_cast<uint8_t*>(gfxfast) +
 //                                     43076, 1, 7, 0, 0);
 //      if (index > 3) {
@@ -484,11 +485,11 @@ data_source_amiga_t::get_sprite(data_res_class_t res, unsigned int index,
       sprite = decode_amiga_sprite(reinterpret_cast<uint8_t*>(gfxfast) + 44676,
                                    10, 7, palette2);  // 10 indicators WTF?
       break;
-    case data_res_font: {
+    case Data::AssetFont: {
       uint8_t *data = reinterpret_cast<uint8_t*>(data_pointers[14]);
       data += index * 8;
-      sprite_amiga_t *s = decode_mask_sprite(data, 8, 8);
-      color_t color;
+      SpriteAmiga *s = decode_mask_sprite(data, 8, 8);
+      Color color;
       color.red = palette[color_off*3];
       color.green = palette[color_off*3+1];
       color.blue = palette[color_off*3+2];
@@ -497,34 +498,34 @@ data_source_amiga_t::get_sprite(data_res_class_t res, unsigned int index,
       sprite = s;
       break;
     }
-    case data_res_font_shadow:
+    case Data::AssetFontShadow:
       break;
-    case data_res_icon:
+    case Data::AssetIcon:
       sprite = get_icon_sprite(index);
       break;
-    case data_res_map_object:
+    case Data::AssetMapObject:
       sprite = get_map_object_sprite(index);
       break;
-    case data_res_map_shadow:
+    case Data::AssetMapShadow:
       sprite = get_map_object_shadow(index);
       break;
-    case data_res_panel_button:
+    case Data::AssetPanelButton:
       if (index < 17) {
         sprite = get_menu_sprite(index, data_pointers[16], 32, 32, 16, 0);
       } else {
         index -= 17;
         unsigned int backs[] = {3, 4, 10, 12, 14, 16, 2, 8};
-        sprite_amiga_t *s = get_menu_sprite(backs[index], data_pointers[16],
-                                            32, 32, 16, 0);
+        SpriteAmiga *s = get_menu_sprite(backs[index], data_pointers[16],
+                                         32, 32, 16, 0);
         uint8_t *l_data = get_data_from_catalog(17, 0, gfxchip);
         uint8_t *r_data = get_data_from_catalog(17, 16, gfxchip);
-        sprite_amiga_t *left = decode_interlased_sprite(l_data, 2, 29, 28, 20,
-                                                        palette2);
+        SpriteAmiga *left = decode_interlased_sprite(l_data, 2, 29, 28, 20,
+                                                     palette2);
         left->make_transparent();
-        sprite_amiga_t *right = decode_interlased_sprite(r_data, 2, 29, 28, 20,
-                                                         palette2);
+        SpriteAmiga *right = decode_interlased_sprite(r_data, 2, 29, 28, 20,
+                                                      palette2);
         right->make_transparent();
-        sprite_amiga_t *star = left->merge_horizontaly(right);
+        SpriteAmiga *star = left->merge_horizontaly(right);
         delete left;
         delete right;
         s->stick(star, 0, 1);
@@ -532,13 +533,13 @@ data_source_amiga_t::get_sprite(data_res_class_t res, unsigned int index,
         sprite = s;
       }
       break;
-    case data_res_frame_bottom:
+    case Data::AssetFrameBottom:
       if (index == 0) {
-        sprite_amiga_t *s = get_hud_sprite(6);
+        SpriteAmiga *s = get_hud_sprite(6);
         sprite = s->split_horizontaly(true);
         delete s;
       } else if (index == 1) {
-        sprite_amiga_t *s = get_hud_sprite(6);
+        SpriteAmiga *s = get_hud_sprite(6);
         sprite = s->split_horizontaly(false);
         delete s;
       } else if (index == 2) {
@@ -553,18 +554,17 @@ data_source_amiga_t::get_sprite(data_res_class_t res, unsigned int index,
         sprite = get_hud_sprite(index - 20);
       }
       break;
-    case data_res_serf_torso:
+    case Data::AssetSerfTorso:
       sprite = get_torso_sprite(index);
       break;
-    case data_res_serf_head:
+    case Data::AssetSerfHead:
       sprite = get_game_object_sprite(20, index);
       break;
-    case data_res_frame_split:
+    case Data::AssetFrameSplit:
       break;
-    case data_res_cursor: {
+    case Data::AssetCursor: {
       uint8_t *data = reinterpret_cast<uint8_t*>(data_pointers[12]);
-      sprite_amiga_t *s = decode_interlased_sprite(data, 2, 16, 28, 16,
-                                                   palette);
+      SpriteAmiga *s = decode_interlased_sprite(data, 2, 16, 28, 16, palette);
       s->make_transparent(0x00444444);
       sprite = s;
       break;
@@ -576,29 +576,28 @@ data_source_amiga_t::get_sprite(data_res_class_t res, unsigned int index,
   return sprite;
 }
 
-color_t
-data_source_amiga_t::get_color(unsigned int index) {
+Color
+DataSourceAmiga::get_color(unsigned int index) {
   if (index > 31) {
-    color_t color = {0, 0, 0, 0};
+    Color color = {0, 0, 0, 0};
     return color;
   }
 
-  color_t color = {palette[index*3+2],
-                   palette[index*3+1],
-                   palette[index*3],
-                   0xFF};
+  Color color = {palette[index*3+2],
+                 palette[index*3+1],
+                 palette[index*3],
+                 0xFF};
 
   return color;
 }
 
-animation_t *
-data_source_amiga_t::get_animation(unsigned int animation,
-                                   unsigned int phase) {
+Animation *
+DataSourceAmiga::get_animation(unsigned int animation, unsigned int phase) {
   uint32_t *animation_catalog = reinterpret_cast<uint32_t*>(data_pointers[1]);
   uint8_t *data = reinterpret_cast<uint8_t*>(animation_catalog);
   unsigned int offset = be32toh(animation_catalog[animation]);
 
-  animation_t *anim = reinterpret_cast<animation_t*>(data + offset);
+  Animation *anim = reinterpret_cast<Animation*>(data + offset);
 
   return anim + (phase >> 3);
 }
@@ -712,7 +711,7 @@ sound_struct_t sound_info[] = {
 };
 
 void *
-data_source_amiga_t::get_sound_data(unsigned int index, size_t *size) {
+DataSourceAmiga::get_sound_data(unsigned int index, size_t *size) {
   if (sound != NULL) {
     size_t count = sizeof(sound_info) / sizeof(sound_struct_t);
     if (index < count) {
@@ -730,18 +729,18 @@ data_source_amiga_t::get_sound_data(unsigned int index, size_t *size) {
 }
 
 void *
-data_source_amiga_t::get_sound(unsigned int index, size_t *size) {
+DataSourceAmiga::get_sound(unsigned int index, size_t *size) {
   *size = 0;
   size_t sfx_size = 0;
   void *data = get_sound_data(index, &sfx_size);
   if (data == NULL) {
-    LOGE("data", "Sound sample with index %d not present.", index);
+    Log::Error["data"] << "Sound sample with index" << index << " not present.";
     return NULL;
   }
 
   void *wav = sfx2wav(data, sfx_size, size, 0, true);
   if (wav == NULL) {
-    LOGE("data", "Could not convert PCM clip to WAV: %d.", index);
+    Log::Error["data"] << "Could not convert PCM clip to WAV: " << index << ".";
     return NULL;
   }
 
@@ -749,7 +748,7 @@ data_source_amiga_t::get_sound(unsigned int index, size_t *size) {
 }
 
 void *
-data_source_amiga_t::get_music(unsigned int /*index*/, size_t *size) {
+DataSourceAmiga::get_music(unsigned int /*index*/, size_t *size) {
 /*
   if (music != NULL) {
     uint8_t *mod = reinterpret_cast<uint8_t*>(music) + 4370;
@@ -763,7 +762,7 @@ data_source_amiga_t::get_music(unsigned int /*index*/, size_t *size) {
 }
 
 void
-data_source_amiga_t::decode(void *data, size_t size) {
+DataSourceAmiga::decode(void *data, size_t size) {
   uint8_t *byte = reinterpret_cast<uint8_t*>(data);
   for (size_t i = 0; i < size; i++, byte++) {
     *byte = *byte ^ static_cast<uint8_t>(i);
@@ -771,7 +770,7 @@ data_source_amiga_t::decode(void *data, size_t size) {
 }
 
 void *
-data_source_amiga_t::unpack(void *data, size_t size, size_t *unpacked_size) {
+DataSourceAmiga::unpack(void *data, size_t size, size_t *unpacked_size) {
   std::stringstream input(std::ios_base::in | std::ios_base::out |
                           std::ios_base::binary);
   input.write(reinterpret_cast<char*>(data), size);
@@ -809,8 +808,8 @@ data_source_amiga_t::unpack(void *data, size_t size, size_t *unpacked_size) {
   return result;
 }
 
-unsigned int data_source_amiga_t::bitplane_count_from_compression(
-                                    unsigned char compression) {
+unsigned int
+DataSourceAmiga::bitplane_count_from_compression( unsigned char compression) {
   unsigned int bpp = 5;
 
   for (int i = 0 ; i < 5 ; i++) {
@@ -823,11 +822,11 @@ unsigned int data_source_amiga_t::bitplane_count_from_compression(
   return bpp;
 }
 
-sprite_amiga_t *
-data_source_amiga_t::get_menu_sprite(unsigned int index, void *block,
-                                     unsigned int width, unsigned int height,
-                                     unsigned char compression,
-                                     unsigned char filling) {
+SpriteAmiga *
+DataSourceAmiga::get_menu_sprite(unsigned int index, void *block,
+                                 unsigned int width, unsigned int height,
+                                 unsigned char compression,
+                                 unsigned char filling) {
   unsigned int bpp = bitplane_count_from_compression(compression);
   size_t sprite_size = (width * height) / 8 * bpp;
   uint8_t *data = reinterpret_cast<uint8_t*>(block) + (sprite_size * index);
@@ -842,8 +841,8 @@ typedef struct {
   uint8_t compression;
 } icon_header_t;
 
-sprite_t *
-data_source_amiga_t::get_icon_sprite(unsigned int index) {
+Sprite *
+DataSourceAmiga::get_icon_sprite(unsigned int index) {
   size_t offset = icon_catalog[index];
   uint8_t *data = reinterpret_cast<uint8_t*>(gfxfast)+offset;
   icon_header_t header = *reinterpret_cast<icon_header_t*>(data);
@@ -869,8 +868,8 @@ invert5bit(uint8_t src) {
 }
 
 unsigned char *
-data_source_amiga_t::get_data_from_catalog(size_t catalog_index, size_t index,
-                                           void *base) {
+DataSourceAmiga::get_data_from_catalog(size_t catalog_index, size_t index,
+                                       void *base) {
   uint32_t *catalog = reinterpret_cast<uint32_t*>(data_pointers[catalog_index]);
   uint32_t offset = catalog[index];
   if (offset == 0) {
@@ -881,8 +880,8 @@ data_source_amiga_t::get_data_from_catalog(size_t catalog_index, size_t index,
   return (unsigned char*)base + offset;
 }
 
-sprite_amiga_t *
-data_source_amiga_t::get_ground_sprite(unsigned int index) {
+SpriteAmiga *
+DataSourceAmiga::get_ground_sprite(unsigned int index) {
   uint8_t *data = get_data_from_catalog(4, index, gfxchip);
   if (data == NULL) {
     return NULL;
@@ -891,8 +890,8 @@ data_source_amiga_t::get_ground_sprite(unsigned int index) {
   uint8_t filled = *data++;
   uint8_t compressed = *data++;
 
-  sprite_amiga_t *sprite = decode_planned_sprite(data, 4, 21, compressed,
-                                                 filled, palette);
+  SpriteAmiga *sprite = decode_planned_sprite(data, 4, 21, compressed,
+                                              filled, palette);
 
   if (sprite != NULL) {
     sprite->set_delta(1, 0);
@@ -902,8 +901,8 @@ data_source_amiga_t::get_ground_sprite(unsigned int index) {
   return sprite;
 }
 
-sprite_t *
-data_source_amiga_t::get_ground_mask_sprite(unsigned int index) {
+Sprite *
+DataSourceAmiga::get_ground_mask_sprite(unsigned int index) {
   uint8_t *data = NULL;
   if (index == 0) {
     data = reinterpret_cast<uint8_t*>(gfxchip);
@@ -918,7 +917,7 @@ data_source_amiga_t::get_ground_mask_sprite(unsigned int index) {
   data += 2;
   height = be16toh(height);
 
-  sprite_amiga_t *sprite = new sprite_amiga_t(32, height);
+  SpriteAmiga *sprite = new SpriteAmiga(32, height);
   sprite->set_delta(2, 0);
   sprite->set_offset(0, 0);
 
@@ -939,13 +938,13 @@ data_source_amiga_t::get_ground_mask_sprite(unsigned int index) {
   return sprite;
 }
 
-sprite_amiga_t *
-data_source_amiga_t::get_mirrored_horizontaly_sprite(sprite_t *sprite) {
+SpriteAmiga *
+DataSourceAmiga::get_mirrored_horizontaly_sprite(Sprite *sprite) {
   if (sprite == NULL) {
     return NULL;
   }
-  sprite_amiga_t *result = new sprite_amiga_t(sprite->get_width(),
-                                              sprite->get_height());
+  SpriteAmiga *result = new SpriteAmiga(sprite->get_width(),
+                                        sprite->get_height());
   result->set_delta(sprite->get_delta_x(), sprite->get_delta_y());
   result->set_offset(sprite->get_offset_x(), sprite->get_offset_y());
 
@@ -961,8 +960,8 @@ data_source_amiga_t::get_mirrored_horizontaly_sprite(sprite_t *sprite) {
   return result;
 }
 
-sprite_t *
-data_source_amiga_t::get_path_mask_sprite(unsigned int index) {
+Sprite *
+DataSourceAmiga::get_path_mask_sprite(unsigned int index) {
   uint8_t *data = get_data_from_catalog(3, index, gfxchip);
   if (data == NULL) {
     return NULL;
@@ -975,18 +974,17 @@ data_source_amiga_t::get_path_mask_sprite(unsigned int index) {
 
   int heghts[] = { 0, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41 };
 
-  sprite_amiga_t *sprite = decode_mask_sprite(data, width, heghts[n]);
+  SpriteAmiga *sprite = decode_mask_sprite(data, width, heghts[n]);
   sprite->set_delta(2, 0);
   sprite->set_offset(0, 0);
 
   return sprite;
 }
 
-sprite_amiga_t *
-data_source_amiga_t::decode_mask_sprite(void *data,
-                                        unsigned int width,
-                                        unsigned int height) {
-  sprite_amiga_t *sprite = new sprite_amiga_t(width, height);
+SpriteAmiga *
+DataSourceAmiga::decode_mask_sprite(void *data, unsigned int width,
+                                    unsigned int height) {
+  SpriteAmiga *sprite = new SpriteAmiga(width, height);
 
   unsigned int size = width/8 * height;
   uint8_t *source = reinterpret_cast<uint8_t*>(data);
@@ -1008,9 +1006,9 @@ data_source_amiga_t::decode_mask_sprite(void *data,
   return sprite;
 }
 
-sprite_t *
-data_source_amiga_t::get_game_object_sprite(unsigned int catalog,
-                                            unsigned int index) {
+Sprite *
+DataSourceAmiga::get_game_object_sprite(unsigned int catalog,
+                                        unsigned int index) {
   uint8_t *data = get_data_from_catalog(catalog, index, gfxchip);
   if (data == NULL) {
     return NULL;
@@ -1027,12 +1025,12 @@ data_source_amiga_t::get_game_object_sprite(unsigned int catalog,
 
   int width = (w+7)/8;
 
-  sprite_amiga_t *mask = decode_mask_sprite(data, width*8, h);
+  SpriteAmiga *mask = decode_mask_sprite(data, width*8, h);
   data += w*h/8;
-  sprite_amiga_t *pixels = decode_planned_sprite(data, width, h,
-                                                 compression, filling, palette);
+  SpriteAmiga *pixels = decode_planned_sprite(data, width, h,
+                                              compression, filling, palette);
 
-  sprite_amiga_t *sprite = pixels->get_amiga_masked(mask);
+  SpriteAmiga *sprite = pixels->get_amiga_masked(mask);
   if (sprite == NULL) {
     return NULL;
   }
@@ -1045,8 +1043,8 @@ data_source_amiga_t::get_game_object_sprite(unsigned int catalog,
   return sprite;
 }
 
-sprite_t *
-data_source_amiga_t::get_torso_sprite(unsigned int index) {
+Sprite *
+DataSourceAmiga::get_torso_sprite(unsigned int index) {
   uint8_t *data = get_data_from_catalog(19, index, gfxchip);
   if (data == NULL) {
     return NULL;
@@ -1066,7 +1064,7 @@ data_source_amiga_t::get_torso_sprite(unsigned int index) {
 
   size_t bps = w*h;
 
-  sprite_amiga_t *mask = decode_mask_sprite(data, w*8, h);
+  SpriteAmiga *mask = decode_mask_sprite(data, w*8, h);
   data += bps;
 
   uint8_t *d = new uint8_t[bps*5];
@@ -1074,11 +1072,11 @@ data_source_amiga_t::get_torso_sprite(unsigned int index) {
   data += bps * 5;
   memcpy(d + bps*4, data, bps);
 
-  sprite_amiga_t *pixels = decode_planned_sprite(d, w, h, 0, 0, palette);
+  SpriteAmiga *pixels = decode_planned_sprite(d, w, h, 0, 0, palette);
 
   delete[] d;
 
-  sprite_amiga_t *res = pixels->get_amiga_masked(mask);
+  SpriteAmiga *res = pixels->get_amiga_masked(mask);
   delete pixels;
   delete mask;
 
@@ -1097,8 +1095,8 @@ typedef struct {
   uint8_t compression;
 } transparent_sprite_heder_t;
 
-sprite_t *
-data_source_amiga_t::get_map_object_sprite(unsigned int index) {
+Sprite *
+DataSourceAmiga::get_map_object_sprite(unsigned int index) {
   uint8_t *data = get_data_from_catalog(6, index, gfxchip);
   if (data == NULL) {
     return NULL;
@@ -1132,14 +1130,14 @@ data_source_amiga_t::get_map_object_sprite(unsigned int index) {
     compression = compression << 1;
   }
 
-  sprite_amiga_t *mask = decode_mask_sprite(data, header.width * 8,
-                                            header.height);
+  SpriteAmiga *mask = decode_mask_sprite(data, header.width * 8,
+                                         header.height);
 
-  sprite_amiga_t *pixels = decode_planned_sprite(data + header.bitplane_size,
-                                                 header.width, header.height,
-                                                 compressed, filled, palette);
+  SpriteAmiga *pixels = decode_planned_sprite(data + header.bitplane_size,
+                                              header.width, header.height,
+                                              compressed, filled, palette);
 
-  sprite_amiga_t *sprite = pixels->get_amiga_masked(mask);
+  SpriteAmiga *sprite = pixels->get_amiga_masked(mask);
   sprite->set_delta(1, 0);
   sprite->set_offset(-header.width * 4, -header.offset_y);
 
@@ -1149,8 +1147,8 @@ data_source_amiga_t::get_map_object_sprite(unsigned int index) {
   return sprite;
 }
 
-sprite_t *
-data_source_amiga_t::get_map_object_shadow(unsigned int index) {
+Sprite *
+DataSourceAmiga::get_map_object_shadow(unsigned int index) {
   uint8_t *data = get_data_from_catalog(6, index, gfxchip);
   if (data == NULL) {
     return NULL;
@@ -1171,8 +1169,8 @@ data_source_amiga_t::get_map_object_shadow(unsigned int index) {
   unsigned int shadow_height = *(shadow+1);
   unsigned int shadow_size = shadow_scanline_size * shadow_height;
 
-  sprite_amiga_t *sprite = new sprite_amiga_t(shadow_scanline_size * 8,
-                                              shadow_height);
+  SpriteAmiga *sprite = new SpriteAmiga(shadow_scanline_size * 8,
+                                        shadow_height);
   sprite->clear();
   sprite->set_delta(*(shadow+2), *(shadow+3));
   sprite->set_offset(0 /* *(shadow) */,
@@ -1222,8 +1220,8 @@ unsigned int hud_offsets[] = {
   3728,  40, 1, 10,
 };
 
-sprite_amiga_t *
-data_source_amiga_t::get_hud_sprite(unsigned int index) {
+SpriteAmiga *
+DataSourceAmiga::get_hud_sprite(unsigned int index) {
   uint8_t *data = reinterpret_cast<uint8_t*>(data_pointers[18]);
   data += hud_offsets[index*4];
 
@@ -1231,17 +1229,16 @@ data_source_amiga_t::get_hud_sprite(unsigned int index) {
                                   hud_offsets[index*4 + 3], 16, 0, palette2);
 }
 
-sprite_amiga_t *
-data_source_amiga_t::decode_planned_sprite(void *data,
-                                           unsigned int width,
-                                           unsigned int height,
-                                           uint8_t compression,
-                                           uint8_t filling,
-                                           uint8_t *palette, bool invert) {
-  sprite_amiga_t *sprite = new sprite_amiga_t(width*8, height);
+SpriteAmiga *
+DataSourceAmiga::decode_planned_sprite(void *data, unsigned int width,
+                                       unsigned int height,
+                                       uint8_t compression,
+                                       uint8_t filling,
+                                       uint8_t *palette, bool invert) {
+  SpriteAmiga *sprite = new SpriteAmiga(width*8, height);
 
   uint8_t *src = reinterpret_cast<uint8_t*>(data);
-  color_t *res = sprite->get_writable_data();
+  Color *res = sprite->get_writable_data();
 
   size_t bps = width * height;  // bitplane size in bytes
 
@@ -1275,18 +1272,17 @@ data_source_amiga_t::decode_planned_sprite(void *data,
   return sprite;
 }
 
-sprite_amiga_t *
-data_source_amiga_t::decode_interlased_sprite(void *data,
-                                              unsigned int width,
-                                              unsigned int height,
-                                              uint8_t compression,
-                                              uint8_t filling,
-                                              uint8_t *palette,
-                                              size_t skip_lines) {
-  sprite_amiga_t *sprite = new sprite_amiga_t(width*8, height);
+SpriteAmiga *
+DataSourceAmiga::decode_interlased_sprite(void *data, unsigned int width,
+                                          unsigned int height,
+                                          uint8_t compression,
+                                          uint8_t filling,
+                                          uint8_t *palette,
+                                          size_t skip_lines) {
+  SpriteAmiga *sprite = new SpriteAmiga(width*8, height);
 
   uint8_t *src = reinterpret_cast<uint8_t*>(data);
-  color_t *res = sprite->get_writable_data();
+  Color *res = sprite->get_writable_data();
 
   size_t bpp = bitplane_count_from_compression(compression);
 
@@ -1321,16 +1317,16 @@ data_source_amiga_t::decode_interlased_sprite(void *data,
   return sprite;
 }
 
-sprite_amiga_t *
-data_source_amiga_t::decode_amiga_sprite(void *data, unsigned int width,
-                                         unsigned int height,
-                                         uint8_t *palette) {
-  sprite_amiga_t *sprite = new sprite_amiga_t(width*8, height);
+SpriteAmiga *
+DataSourceAmiga::decode_amiga_sprite(void *data, unsigned int width,
+                                     unsigned int height,
+                                     uint8_t *palette) {
+  SpriteAmiga *sprite = new SpriteAmiga(width*8, height);
 
   uint8_t *src_1 = reinterpret_cast<uint8_t*>(data);
   size_t bp2s = width * 2 * height;
   uint8_t *src_2 = src_1 + bp2s;
-  color_t *res = sprite->get_writable_data();
+  Color *res = sprite->get_writable_data();
 
   for (size_t y = 0; y < height; y++) {
     for (size_t i = 0; i < width; i++) {
@@ -1357,7 +1353,7 @@ data_source_amiga_t::decode_amiga_sprite(void *data, unsigned int width,
   return sprite;
 }
 
-sprite_amiga_t::sprite_amiga_t(unsigned int width, unsigned int height) {
+SpriteAmiga::SpriteAmiga(unsigned int width, unsigned int height) {
   this->width = width;
   this->height = height;
   delta_x = 0;
@@ -1369,18 +1365,17 @@ sprite_amiga_t::sprite_amiga_t(unsigned int width, unsigned int height) {
   memset(data, 0, size);
 }
 
-sprite_amiga_t::~sprite_amiga_t() {
+SpriteAmiga::~SpriteAmiga() {
   delete[] data;
 }
 
-sprite_amiga_t *
-sprite_amiga_t::get_amiga_masked(sprite_t *mask) {
+SpriteAmiga *
+SpriteAmiga::get_amiga_masked(Sprite *mask) {
   if (mask->get_width() > width) {
     assert(0);
   }
 
-  sprite_amiga_t *masked = new sprite_amiga_t(mask->get_width(),
-                                              mask->get_height());
+  SpriteAmiga *masked = new SpriteAmiga(mask->get_width(), mask->get_height());
 
   uint32_t *pos = reinterpret_cast<uint32_t*>(masked->get_data());
 
@@ -1404,14 +1399,13 @@ sprite_amiga_t::get_amiga_masked(sprite_t *mask) {
   return masked;
 }
 
-sprite_t *
-sprite_amiga_t::get_masked(sprite_t *mask) {
+Sprite *
+SpriteAmiga::get_masked(Sprite *mask) {
   if (mask->get_width() > width) {
     assert(0);
   }
 
-  sprite_amiga_t *masked = new sprite_amiga_t(mask->get_width(),
-                                              mask->get_height());
+  SpriteAmiga *masked = new SpriteAmiga(mask->get_width(), mask->get_height());
   masked->set_offset(mask->get_offset_x(), mask->get_offset_y());
 
   uint32_t *pos = reinterpret_cast<uint32_t*>(masked->get_data());
@@ -1437,7 +1431,7 @@ sprite_amiga_t::get_masked(sprite_t *mask) {
 }
 
 void
-sprite_amiga_t::make_transparent(uint32_t rc) {
+SpriteAmiga::make_transparent(uint32_t rc) {
   uint32_t *p = reinterpret_cast<uint32_t*>(data);
   for (unsigned int y = 0; y < height; y++) {
     for (unsigned int x = 0; x < width; x++) {
@@ -1449,13 +1443,13 @@ sprite_amiga_t::make_transparent(uint32_t rc) {
   }
 }
 
-sprite_amiga_t *
-sprite_amiga_t::merge_horizontaly(sprite_amiga_t *right) {
+SpriteAmiga *
+SpriteAmiga::merge_horizontaly(SpriteAmiga *right) {
   if (right->height != height) {
     return NULL;
   }
 
-  sprite_amiga_t *result = new sprite_amiga_t(width + right->width, height);
+  SpriteAmiga *result = new SpriteAmiga(width + right->width, height);
 
   uint32_t *src_l = reinterpret_cast<uint32_t*>(data);
   uint32_t *src_r = reinterpret_cast<uint32_t*>(right->data);
@@ -1472,10 +1466,10 @@ sprite_amiga_t::merge_horizontaly(sprite_amiga_t *right) {
   return result;
 }
 
-sprite_amiga_t *
-sprite_amiga_t::split_horizontaly(bool return_right) {
+SpriteAmiga *
+SpriteAmiga::split_horizontaly(bool return_right) {
   unsigned int res_width = width/2;
-  sprite_amiga_t *s = new sprite_amiga_t(res_width, height);
+  SpriteAmiga *s = new SpriteAmiga(res_width, height);
   uint32_t *src = reinterpret_cast<uint32_t*>(data);
   uint32_t *res = reinterpret_cast<uint32_t*>(s->data);
   if (return_right) {
@@ -1492,7 +1486,7 @@ sprite_amiga_t::split_horizontaly(bool return_right) {
 }
 
 void
-sprite_amiga_t::stick(sprite_amiga_t *sticker, unsigned int x, unsigned int y) {
+SpriteAmiga::stick(SpriteAmiga *sticker, unsigned int x, unsigned int y) {
   uint32_t *base = reinterpret_cast<uint32_t*>(data);
   uint32_t *stkr = reinterpret_cast<uint32_t*>(sticker->data);
 
@@ -1510,31 +1504,31 @@ sprite_amiga_t::stick(sprite_amiga_t *sticker, unsigned int x, unsigned int y) {
 }
 
 void
-sprite_amiga_t::fill(color_t color) {
-  color_t *c = get_writable_data();
+SpriteAmiga::fill(Color color) {
+  Color *c = get_writable_data();
   for (unsigned int i = 0; i < (width * height); i++) {
     *c++ = color;
   }
 }
 
 void
-sprite_amiga_t::fill_masked(color_t color) {
-  color_t *c = get_writable_data();
+SpriteAmiga::fill_masked(Color color) {
+  Color *c = get_writable_data();
   for (unsigned int i = 0; i < (width * height); i++) {
-    color_t *cc = c++;
+    Color *cc = c++;
     if (cc->alpha != 0x00) {
       *cc = color;
     }
   }
 }
 
-palette_amiga_t::palette_amiga_t(uint8_t *palette_amiga) {
+PaletteAmiga::PaletteAmiga(uint8_t *palette_amiga) {
   this->palette_amiga = palette_amiga;
 }
 
-color_t
-palette_amiga_t::get_color(size_t index) const {
-  color_t color = {0, 0, 0, 0};
+Color
+PaletteAmiga::get_color(size_t index) const {
+  Color color = {0, 0, 0, 0};
 
   if (index < 32) {
     color.red   = palette_amiga[index*3+0];  // R
@@ -1546,13 +1540,13 @@ palette_amiga_t::get_color(size_t index) const {
   return color;
 }
 
-palette_t *
-data_source_amiga_t::get_palette(unsigned int index) {
-  palette_t *res = NULL;
+Palette *
+DataSourceAmiga::get_palette(unsigned int index) {
+  Palette *res = NULL;
 
   if (index < 3) {
     uint8_t *pals[3] = {palette, palette3, palette2};
-    res = new palette_amiga_t(pals[index]);
+    res = new PaletteAmiga(pals[index]);
   }
 
   return res;

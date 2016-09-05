@@ -1,7 +1,7 @@
 /*
  * log.h - Logging
  *
- * Copyright (C) 2012  Jon Lund Steffensen <jonlst@gmail.com>
+ * Copyright (C) 2012-2016  Jon Lund Steffensen <jonlst@gmail.com>
  *
  * This file is part of freeserf.
  *
@@ -35,48 +35,85 @@
 #ifndef SRC_LOG_H_
 #define SRC_LOG_H_
 
-#include <cstdio>
+#include <ostream>
+#include <string>
 
-/* Log levels */
-typedef enum {
-  LOG_LEVEL_VERBOSE = 0,
-  LOG_LEVEL_DEBUG,
-  LOG_LEVEL_INFO,
-  LOG_LEVEL_WARN,
-  LOG_LEVEL_ERROR,
+class Log {
+ public:
+  /* Log levels */
+  typedef enum Level {
+    LevelVerbose = 0,
+    LevelDebug,
+    LevelInfo,
+    LevelWarn,
+    LevelError,
 
-  LOG_LEVEL_MAX
-} log_level_t;
+    LevelMax
+  } Level;
 
+  class Stream {
+   protected:
+    std::ostream *stream;
 
-#ifdef __ANDROID__ /* Bypass normal logging on Android. */
-#include <android/log.h>
+   public:
+    explicit Stream(std::ostream *_stream) : stream(_stream) {}
+    ~Stream() {
+      *stream << std::endl;
+      stream->flush();
+    }
 
-# define LOG_TAG "freeserf"
+    std::ostream *get_stream() { return stream; }
 
-# define LOGV(system, ...)  __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, \
-                                                __VA_ARGS__)
-# define LOGD(system, ...)  __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, \
-                                                __VA_ARGS__)
-# define LOGI(system, ...)  __android_log_print(ANDROID_LOG_INFO, LOG_TAG, \
-                                                __VA_ARGS__)
-# define LOGW(system, ...)  __android_log_print(ANDROID_LOG_WARN, LOG_TAG, \
-                                                __VA_ARGS__)
-# define LOGE(system, ...)  __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, \
-                                                __VA_ARGS__)
+    template <class T> Stream & operator << (const T &val) {
+      *stream << val;
+      return *this;
+    }
 
-#else
+    Stream & operator << (const char val[]) {
+      *stream << std::string(val);
+      return *this;
+    }
+  };
 
-# define LOGV(system, ...)  log_msg(LOG_LEVEL_VERBOSE, system, __VA_ARGS__)
-# define LOGD(system, ...)  log_msg(LOG_LEVEL_DEBUG, system, __VA_ARGS__)
-# define LOGI(system, ...)  log_msg(LOG_LEVEL_INFO, system, __VA_ARGS__)
-# define LOGW(system, ...)  log_msg(LOG_LEVEL_WARN, system, __VA_ARGS__)
-# define LOGE(system, ...)  log_msg(LOG_LEVEL_ERROR, system, __VA_ARGS__)
+  class Logger {
+   protected:
+    Level level;
+    std::string prefix;
+    std::ostream *stream;
+    static std::ostream dummy;
 
-#endif
+   public:
+    explicit Logger(Level _level, std::string _prefix)
+      : level(_level), prefix(_prefix) {
+      apply_level();
+    }
 
-void log_set_file(FILE *file);
-void log_set_level(log_level_t level);
-void log_msg(log_level_t level, const char *system, const char *format, ...);
+    virtual Stream operator[](std::string subsystem) {
+      *stream << prefix << ": [" << subsystem << "] ";
+      return Stream(stream);
+    }
+
+    void apply_level() {
+      if (level < Log::level) {
+        stream = &dummy;
+      } else {
+        stream = Log::stream;
+      }
+    }
+  };
+
+  static void set_file(std::ostream *stream);
+  static void set_level(Log::Level level);
+
+  static Logger Verbose;
+  static Logger Debug;
+  static Logger Info;
+  static Logger Warn;
+  static Logger Error;
+
+ protected:
+  static std::ostream *stream;
+  static Level level;
+};
 
 #endif  // SRC_LOG_H_

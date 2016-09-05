@@ -41,7 +41,7 @@
  */
 
 bool
-data_source_t::check_file(const std::string &path) {
+DataSource::check_file(const std::string &path) {
   std::ifstream ifile(path.c_str());
   if (ifile.good()) {
     ifile.close();
@@ -52,7 +52,7 @@ data_source_t::check_file(const std::string &path) {
 }
 
 void*
-data_source_t::file_read(const std::string &path, size_t *size) {
+DataSource::file_read(const std::string &path, size_t *size) {
   char *data = NULL;
   *size = 0;
 
@@ -83,7 +83,7 @@ data_source_t::file_read(const std::string &path, size_t *size) {
 }
 
 bool
-data_source_t::file_write(const std::string &path, void *data, size_t size) {
+DataSource::file_write(const std::string &path, void *data, size_t size) {
   std::ofstream file(path.c_str(), std::ios::binary | std::ios::trunc);
   if (!file.good()) {
     return false;
@@ -97,9 +97,9 @@ data_source_t::file_write(const std::string &path, void *data, size_t size) {
 
 /* Calculate hash of sprite identifier. */
 uint64_t
-sprite_t::create_sprite_id(uint64_t resource, uint64_t index,
-                           uint64_t mask_resource, uint64_t mask_index,
-                           uint64_t offset) {
+Sprite::create_sprite_id(uint64_t resource, uint64_t index,
+                         uint64_t mask_resource, uint64_t mask_index,
+                         uint64_t offset) {
   uint64_t result = (resource & 0xFF) << 56;  // 0xFF00000000000000
   result |= (index & 0xFFFF) << 40;           // 0x00FFFF0000000000
   result |= (mask_resource & 0xFF) << 32;     // 0x000000FF00000000

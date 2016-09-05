@@ -24,79 +24,82 @@
 
 #include <string>
 #include <list>
+#include <memory>
 
-typedef enum {
-  data_type_unknown,
-  data_type_sprite,
-  data_type_animation,
-  data_type_sound,
-  data_type_music,
-  data_type_palette,
-} data_type_t;
+class DataSource;
 
-typedef enum {
-  data_res_none,
-  data_res_art_landscape,
-  data_res_animation,
-  data_res_serf_shadow,
-  data_res_dotted_lines,
-  data_res_art_flag,
-  data_res_art_box,
-  data_res_credits_bg,
-  data_res_logo,
-  data_res_symbol,
-  data_res_map_mask_up,
-  data_res_map_mask_down,
-  data_res_path_mask,
-  data_res_map_ground,
-  data_res_path_ground,
-  data_res_game_object,
-  data_res_frame_top,
-  data_res_map_border,
-  data_res_map_waves,
-  data_res_frame_popup,
-  data_res_indicator,
-  data_res_font,
-  data_res_font_shadow,
-  data_res_icon,
-  data_res_map_object,
-  data_res_map_shadow,
-  data_res_panel_button,
-  data_res_frame_bottom,
-  data_res_serf_torso,
-  data_res_serf_head,
-  data_res_frame_split,
-  data_res_sound,
-  data_res_music,
-  data_res_cursor,
-  data_res_palette,
-} data_res_class_t;
+class Data {
+ public:
+  typedef enum Type {
+    TypeUnknown,
+    TypeSprite,
+    TypeAnimation,
+    TypeSound,
+    TypeMusic,
+    TypePalette
+  } Type;
+  
+  typedef enum Resource {
+    AssetNone,
+    AssetArtLandscape,
+    AssetAnimation,
+    AssetSerfShadow,
+    AssetDottedLines,
+    AssetArtFlag,
+    AssetArtBox,
+    AssetCreditsBg,
+    AssetLogo,
+    AssetSymbol,
+    AssetMapMaskUp,
+    AssetMapMaskDown,
+    AssetPathMask,
+    AssetMapGround,
+    AssetPathGround,
+    AssetGameObject,
+    AssetFrameTop,
+    AssetMapBorder,
+    AssetMapWaves,
+    AssetFramePopup,
+    AssetIndicator,
+    AssetFont,
+    AssetFontShadow,
+    AssetIcon,
+    AssetMapObject,
+    AssetMapShadow,
+    AssetPanelButton,
+    AssetFrameBottom,
+    AssetSerfTorso,
+    AssetSerfHead,
+    AssetFrameSplit,
+    AssetSound,
+    AssetMusic,
+    AssetCursor,
+    AssetPalette
+  } Asset;
 
-class data_source_t;
-
-class data_t {
  protected:
-  static data_t *instance;
-  data_source_t *data_source;
-  std::list<std::string> search_paths;
+  std::unique_ptr<DataSource> data_source;
 
-  data_t();
+  Data();
 
  public:
-  virtual ~data_t();
+  Data(const Data& that) = delete;
+  virtual ~Data();
 
-  static data_t *get_instance();
+  Data& operator = (const Data& that) = delete;
 
-  bool load(const std::string &path);
+  static Data *get_instance();
 
-  data_source_t *get_data_source() const { return data_source; }
+  bool load(const std::string* path);
 
-  static data_type_t get_resource_type(data_res_class_t resource);
-  static unsigned int get_resource_count(data_res_class_t resource);
-  static const char *get_resource_name(data_res_class_t resource);
+  DataSource *get_data_source() const { return data_source.get(); }
+
+  static Type get_resource_type(Resource resource);
+  static unsigned int get_resource_count(Resource resource);
+  static const char *get_resource_name(Resource resource);
 
  protected:
-  void add_to_search_paths(const char *path, const char *suffix);
+  std::list<std::string> get_standard_search_paths() const;
 };
 
 #endif  // SRC_DATA_H_

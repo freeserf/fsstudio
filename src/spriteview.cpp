@@ -80,7 +80,7 @@ FSSSpriteView::~FSSSpriteView() {
 }
 
 void
-FSSSpriteView::setSprite(sprite_t *_sprite) {
+FSSSpriteView::setSprite(Sprite *_sprite) {
   if (sprite != NULL) {
     delete sprite;
     sprite = NULL;

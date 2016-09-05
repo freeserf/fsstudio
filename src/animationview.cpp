@@ -1,5 +1,5 @@
 /*
- * sourcesview.h - FSSSourcesView declaration
+ * paletteview.cpp - FSSPaletteModel implementation
  *
  * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
  *
@@ -19,31 +19,31 @@
  * along with FSStudio.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_SOURCESVIEW_H_
-#define SRC_SOURCESVIEW_H_
+#include "src/animationview.h"
 
-#include <QSplitter>
-#include <QList>
+FSSAnimationView::FSSAnimationView(QWidget *pParent) : QLabel(pParent) {
+  animation = NULL;
+}
 
-#include "src/data.h"
+FSSAnimationView::~FSSAnimationView() {
+}
 
-class FSSResourceView;
+void
+FSSAnimationView::setAnimation(const Animation *_animation) {
+  animation = _animation;
 
-class FSSSourcesView : public QSplitter {
-  Q_OBJECT
+  if (animation == NULL) {
+    return;
+  }
 
- protected:
-  QList<FSSResourceView*> sourceViews;
-
- public:
-  explicit FSSSourcesView(QWidget *parent = 0);
-
- signals:
-  void resourceSelected(Data::Resource resource_class, unsigned int index);
-
- public slots:
-  void addSource(DataSource *source);
-  void onResourceSelected(Data::Resource resource_class, unsigned int index);
-};
-
-#endif  // SRC_SOURCESVIEW_H_
+  QString text;
+/*
+  for (size_t i = 0; i < animation->get_size(); i++) {
+    const animation_stage_t *stage = animation->get_stage(i);
+    QString t;
+    t.sprintf("%lu\ttime = %d\tx = %d\ty = %d\n", i, stage->sprite, stage->x, stage->y);
+    text += t;
+  }
+*/
+  setText(text);
+}
