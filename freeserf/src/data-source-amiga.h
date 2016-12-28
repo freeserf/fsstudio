@@ -27,57 +27,26 @@
 
 #include "src/data-source.h"
 
-class SpriteAmiga : public Sprite {
- protected:
-  unsigned int width;
-  unsigned int height;
-  int delta_x;
-  int delta_y;
-  int offset_x;
-  int offset_y;
-  uint8_t *data;
-
- public:
-  SpriteAmiga(unsigned int width, unsigned int height);
-  virtual ~SpriteAmiga();
-
-  virtual uint8_t *get_data() const { return data; }
-  virtual unsigned int get_width() const { return width; }
-  virtual unsigned int get_height() const { return height; }
-  virtual int get_delta_x() const { return delta_x; }
-  virtual int get_delta_y() const { return delta_y; }
-  virtual int get_offset_x() const { return offset_x; }
-  virtual int get_offset_y() const { return offset_y; }
-
-  virtual Sprite *get_masked(Sprite *mask);
-
-  void set_delta(int x, int y) { delta_x = x; delta_y = y; }
-  void set_offset(int x, int y) { offset_x = x; offset_y = y; }
-  SpriteAmiga *get_amiga_masked(Sprite *mask);
-  void clear() {}
-  Color *get_writable_data() { return reinterpret_cast<Color*>(data); }
-
-  void make_transparent(uint32_t rc = 0);
-  SpriteAmiga *merge_horizontaly(SpriteAmiga *right);
-  SpriteAmiga *split_horizontaly(bool return_right);
-  void stick(SpriteAmiga *sticker, unsigned int x, unsigned int y);
-  void fill(Color color);
-  void fill_masked(Color color);
-};
-
-class PaletteAmiga : public Palette {
- protected:
-  uint8_t *palette_amiga;
-
- public:
-  explicit PaletteAmiga(uint8_t *palette_amiga);
-  virtual ~PaletteAmiga() {}
-
-  virtual size_t get_size() const { return 32; }
-  virtual Color get_color(size_t index) const;
-};
-
 class DataSourceAmiga : public DataSource {
+ protected:
+  class SpriteAmiga : public Sprite {
+   public:
+    SpriteAmiga(unsigned int width, unsigned int height);
+    virtual ~SpriteAmiga();
+
+    void set_delta(int x, int y) { delta_x = x; delta_y = y; }
+    void set_offset(int x, int y) { offset_x = x; offset_y = y; }
+    SpriteAmiga *get_amiga_masked(Sprite *mask);
+    void clear() {}
+    Sprite::Color *get_writable_data() {
+      return reinterpret_cast<Sprite::Color*>(data);
+    }
+
+    void make_transparent(uint32_t rc = 0);
+    SpriteAmiga *merge_horizontaly(SpriteAmiga *right);
+    SpriteAmiga *split_horizontaly(bool return_right);
+  };
+
  public:
   DataSourceAmiga();
   virtual ~DataSourceAmiga();
@@ -86,16 +55,12 @@ class DataSourceAmiga : public DataSource {
   virtual bool load(const std::string &path);
 
   virtual Sprite *get_sprite(Data::Resource res, unsigned int index,
-                             int color_off);
-
-  virtual Color get_color(unsigned int index);
+                             const Sprite::Color &color);
 
   virtual Animation *get_animation(unsigned int animation, unsigned int phase);
 
   virtual void *get_sound(unsigned int index, size_t *size);
   virtual void *get_music(unsigned int index, size_t *size);
-
-  virtual Palette *get_palette(unsigned int index);
 
  private:
   void *gfxfast;
@@ -134,18 +99,15 @@ class DataSourceAmiga : public DataSource {
 
   SpriteAmiga *decode_planned_sprite(void *data,
                                      unsigned int width, unsigned int height,
-                                     uint8_t compression,
-                                     uint8_t filling, uint8_t *palette,
-                                     bool invert = true);
+                                     uint8_t compression, uint8_t filling,
+                                     uint8_t *palette, bool invert = true);
   SpriteAmiga *decode_interlased_sprite(void *data,
-                                        unsigned int width,
-                                        unsigned int height,
-                                        uint8_t compression,
-                                        uint8_t filling, uint8_t *palette,
+                                        unsigned int width, unsigned int height,
+                                        uint8_t compression, uint8_t filling,
+                                        uint8_t *palette,
                                         size_t skip_lines = 0);
   SpriteAmiga *decode_amiga_sprite(void *data,
-                                   unsigned int width,
-                                   unsigned int height,
+                                   unsigned int width, unsigned int height,
                                    uint8_t *palette);
   SpriteAmiga *decode_mask_sprite(void *data,
                                   unsigned int width, unsigned int height);

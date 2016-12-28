@@ -21,6 +21,10 @@
 
 #include "src/data-source-amiga.h"
 
+#ifdef ENABLE_XMP
+#include <xmp.h>
+#endif  // ENABLE_XMP
+
 #include <cstdlib>
 #include <cassert>
 #include <vector>
@@ -75,7 +79,7 @@ uint8_t palette[] = {
   0xDD, 0xDD, 0x00,   // 31
 };
 
-uint8_t palette1[] = {
+uint8_t palette_intro[] = {
   0x00, 0x00, 0x00,   // 0
   0x55, 0x22, 0x00,   // 1
   0x77, 0x33, 0x00,   // 2
@@ -110,14 +114,74 @@ uint8_t palette1[] = {
   0xDD, 0xDD, 0x00,   // 31
 };
 
-uint8_t palette_patch[] = {
-  0x00, 0x00, 0x00,  // 0
-  0xFF, 0xAA, 0x00,  // 1
-  0x00, 0x00, 0x00,  // 2
-  0x00, 0xEE, 0xEE,  // 3
-  0x00, 0x00, 0xBB,  // 4
-  0x44, 0x44, 0xDD,  // 5
-  0x88, 0x88, 0xFF,  // 6
+uint8_t palette_logo[] = {
+  0x00, 0x00, 0x00,   // 0
+  0x44, 0x66, 0xDD,   // 1
+  0x00, 0x00, 0x00,   // 2
+  0x00, 0xEE, 0xEE,   // 3
+  0x00, 0x00, 0xBB,   // 4
+  0x44, 0x44, 0xDD,   // 5
+  0x88, 0x88, 0xFF,   // 6
+  0x00, 0xCC, 0xBB,   // 7
+  0x22, 0x44, 0x00,   // 8
+  0x33, 0x55, 0x00,   // 9
+  0x33, 0x66, 0x33,   // 10
+  0x66, 0x88, 0xEE,   // 11
+  0x44, 0x88, 0x00,   // 12
+  0x66, 0x99, 0x00,   // 13
+  0x77, 0xBB, 0x44,   // 14
+  0x00, 0x00, 0xDD,   // 15
+  0x44, 0x44, 0x44,   // 16
+  0x99, 0x99, 0x99,   // 17
+  0xFF, 0xFF, 0xFF,   // 18
+  0xEE, 0x66, 0x66,   // 19
+  0x22, 0x22, 0x22,   // 20
+  0x66, 0x66, 0x66,   // 21
+  0xCC, 0xCC, 0xCC,   // 22
+  0xDD, 0x33, 0x33,   // 23
+  0x55, 0x22, 0x00,   // 24
+  0x77, 0x33, 0x00,   // 25
+  0x99, 0x55, 0x22,   // 26
+  0x55, 0x77, 0xDD,   // 27
+  0xBB, 0x88, 0x55,   // 28
+  0xDD, 0xAA, 0x77,   // 29
+  0xFF, 0xDD, 0xBB,   // 30
+  0xDD, 0xDD, 0x00,   // 31
+};
+
+uint8_t palette_symbols[] = {
+  0x00, 0x00, 0x00,   // 0
+  0xFF, 0xAA, 0x00,   // 1
+  0x00, 0x00, 0x00,   // 2
+  0x00, 0xEE, 0xEE,   // 3
+  0x00, 0x00, 0xBB,   // 4
+  0x44, 0x44, 0xDD,   // 5
+  0x88, 0x88, 0xFF,   // 6
+  0x00, 0xCC, 0xBB,   // 7
+  0x22, 0x44, 0x00,   // 8
+  0x33, 0x55, 0x00,   // 9
+  0x33, 0x66, 0x33,   // 10
+  0xEE, 0x88, 0xFF,   // 11
+  0x44, 0x88, 0x00,   // 12
+  0x66, 0x99, 0x00,   // 13
+  0x77, 0xBB, 0x44,   // 14
+  0xCC, 0x77, 0xDD,   // 15
+  0x44, 0x44, 0x44,   // 16
+  0x99, 0x99, 0x99,   // 17
+  0xFF, 0xFF, 0xFF,   // 18
+  0xEE, 0x66, 0x66,   // 19
+  0x22, 0x22, 0x22,   // 20
+  0x66, 0x66, 0x66,   // 21
+  0xCC, 0xCC, 0xCC,   // 22
+  0xDD, 0x33, 0x33,   // 23
+  0x55, 0x22, 0x00,   // 24
+  0x77, 0x33, 0x00,   // 25
+  0x99, 0x55, 0x22,   // 26
+  0xFF, 0xFF, 0x99,   // 27
+  0xBB, 0x88, 0x55,   // 28
+  0xDD, 0xAA, 0x77,   // 29
+  0xFF, 0xDD, 0xBB,   // 30
+  0xDD, 0xDD, 0x00,   // 31
 };
 
 uint8_t palette2[] = {
@@ -153,41 +217,6 @@ uint8_t palette2[] = {
   0x00, 0x00, 0x00,  // 29 ???
   0x00, 0x00, 0x00,  // 30 ???
   0x00, 0x00, 0x00,  // 31 ???
-};
-
-uint8_t palette3[] = {
-  0x00, 0x00, 0x00,  // 0
-  0xFF, 0xFF, 0xFF,  // 1
-  0x88, 0x44, 0x00,  // 2
-  0xEE, 0x66, 0x00,  // 3
-  0x77, 0x55, 0x44,  // 4
-  0xAA, 0x88, 0x66,  // 5
-  0xEE, 0xAA, 0x88,  // 6
-  0xFF, 0xCC, 0x99,  // 7
-  0x44, 0x33, 0x11,  // 8
-  0x77, 0x55, 0x22,  // 9
-  0x99, 0x88, 0x33,  // 10
-  0xBB, 0xAA, 0x44,  // 11
-  0x33, 0x55, 0x11,  // 12
-  0x55, 0x77, 0x22,  // 13
-  0x77, 0x99, 0x22,  // 14
-  0x99, 0xCC, 0x33,  // 15
-  0xAA, 0xDD, 0x44,  // 16
-  0xAA, 0xEE, 0x44,  // 17
-  0x11, 0x33, 0x22,  // 18
-  0x11, 0x44, 0x55,  // 19
-  0x22, 0x55, 0x55,  // 20
-  0x33, 0x77, 0x77,  // 21
-  0x33, 0x88, 0x88,  // 22
-  0x44, 0x99, 0xAA,  // 23
-  0x00, 0x00, 0xCC,  // 24
-  0x11, 0x44, 0xCC,  // 25
-  0x33, 0x77, 0xDD,  // 26
-  0x55, 0x99, 0xDD,  // 27
-  0x77, 0xBB, 0xEE,  // 28
-  0x99, 0xDD, 0xEE,  // 29
-  0xBB, 0xFF, 0xFF,  // 30
-  0xDD, 0xFF, 0xFF,  // 31
 };
 
 DataSourceAmiga::DataSourceAmiga()
@@ -276,9 +305,9 @@ DataSourceAmiga::load(const std::string &path) {
   // Prepare data pointer bases
   data_pointers[1] = gfxfast;   // Animations
   data_pointers[2] = gfxfast;   // Ground masks catalog (4 * 81)
-  data_pointers[3] = gfxfast;   // ? (4 * 27)?
+  data_pointers[3] = gfxfast;   // Path sprites catalog (4 * 27)
   data_pointers[4] = gfxfast;   // Ground sprites catalog (4 * 32)
-  data_pointers[5] = gfxchip;
+  data_pointers[5] = gfxchip;   // ?
   data_pointers[6] = gfxfast;   // Map objects catalog (4 * 194)
   data_pointers[7] = gfxfast;   // Hud multiplayer
   data_pointers[8] = gfxchip;   // Borders
@@ -343,7 +372,7 @@ DataSourceAmiga::load(const std::string &path) {
 
 Sprite *
 DataSourceAmiga::get_sprite(Data::Resource res, unsigned int index,
-                            int color_off) {
+                            const Sprite::Color &color) {
   Sprite *sprite = NULL;
   switch (res) {
     case Data::AssetArtLandscape:
@@ -372,19 +401,18 @@ DataSourceAmiga::get_sprite(Data::Resource res, unsigned int index,
       }
       break;
     case Data::AssetCreditsBg:
-      sprite = decode_interlased_sprite(data_pointers[23], 40, 200,
-                                        0, 0, palette);
+      sprite = decode_interlased_sprite(data_pointers[23], 40, 200, 0, 0, palette_intro);
       break;
     case Data::AssetLogo: {
       uint8_t *data = reinterpret_cast<uint8_t*>(gfxfast);
       data += 188356;
-      sprite = decode_interlased_sprite(data, 64/8, 96, 0, 0, palette);
+      sprite = decode_interlased_sprite(data, 64/8, 96, 0, 0, palette_logo);
       break;
     }
     case Data::AssetSymbol: {
       uint8_t *data = reinterpret_cast<uint8_t*>(gfxfast);
       data += 178116 + (640*index);
-      sprite = decode_interlased_sprite(data, 32/8, 32, 0, 0, palette);
+      sprite = decode_interlased_sprite(data, 32/8, 32, 0, 0, palette_symbols);
       break;
     }
     case Data::AssetMapMaskUp:
@@ -407,7 +435,7 @@ DataSourceAmiga::get_sprite(Data::Resource res, unsigned int index,
       SpriteAmiga *s = NULL;
       if (index == 32) {
         s = new SpriteAmiga(32, 21);
-        Color c = {0xBB, 0x00, 0x00, 0xFF};
+        Sprite::Color c = {0xBB, 0x00, 0x00, 0xFF};
         s->fill(c);
       } else {
         s = get_ground_sprite(index);
@@ -489,11 +517,6 @@ DataSourceAmiga::get_sprite(Data::Resource res, unsigned int index,
       uint8_t *data = reinterpret_cast<uint8_t*>(data_pointers[14]);
       data += index * 8;
       SpriteAmiga *s = decode_mask_sprite(data, 8, 8);
-      Color color;
-      color.red = palette[color_off*3];
-      color.green = palette[color_off*3+1];
-      color.blue = palette[color_off*3+2];
-      color.alpha = 0xFF;
       s->fill_masked(color);
       sprite = s;
       break;
@@ -574,21 +597,6 @@ DataSourceAmiga::get_sprite(Data::Resource res, unsigned int index,
   }
 
   return sprite;
-}
-
-Color
-DataSourceAmiga::get_color(unsigned int index) {
-  if (index > 31) {
-    Color color = {0, 0, 0, 0};
-    return color;
-  }
-
-  Color color = {palette[index*3+2],
-                 palette[index*3+1],
-                 palette[index*3],
-                 0xFF};
-
-  return color;
 }
 
 Animation *
@@ -749,16 +757,43 @@ DataSourceAmiga::get_sound(unsigned int index, size_t *size) {
 
 void *
 DataSourceAmiga::get_music(unsigned int /*index*/, size_t *size) {
-/*
+  void *wav = nullptr;
+  if (size != nullptr) {
+    *size = 0;
+  }
+
+#ifdef ENABLE_XMP
   if (music != NULL) {
     uint8_t *mod = reinterpret_cast<uint8_t*>(music) + 4370;
     size_t mod_size = music_size - 4370;
-    void *mid = mod2mid(mod, mod_size, size);
-    return mid;
+
+    std::vector<char> buffer;
+
+    xmp_context ctx = xmp_create_context();
+    if (xmp_load_module_from_memory(ctx, mod, mod_size) == 0) {
+      if (xmp_start_player(ctx, 44100, 0) == 0) {
+        struct xmp_frame_info fi;
+        while (xmp_play_frame(ctx) == 0) {
+          xmp_get_frame_info(ctx, &fi);
+
+          if (fi.loop_count > 0) {
+            break;
+          }
+
+          char *samples = reinterpret_cast<char*>(fi.buffer);
+          buffer.insert(buffer.end(), samples, samples + fi.buffer_size);
+        }
+        xmp_end_player(ctx);
+      }
+      xmp_release_module(ctx);
+    }
+    xmp_free_context(ctx);
+
+    wav = sfx2wav16(buffer.data(), buffer.size(), size);
   }
-*/
-  *size = 0;
-  return NULL;
+#endif  // ENABLE_XMP
+
+  return wav;
 }
 
 void
@@ -809,7 +844,7 @@ DataSourceAmiga::unpack(void *data, size_t size, size_t *unpacked_size) {
 }
 
 unsigned int
-DataSourceAmiga::bitplane_count_from_compression( unsigned char compression) {
+DataSourceAmiga::bitplane_count_from_compression(unsigned char compression) {
   unsigned int bpp = 5;
 
   for (int i = 0 ; i < 5 ; i++) {
@@ -822,7 +857,7 @@ DataSourceAmiga::bitplane_count_from_compression( unsigned char compression) {
   return bpp;
 }
 
-SpriteAmiga *
+DataSourceAmiga::SpriteAmiga *
 DataSourceAmiga::get_menu_sprite(unsigned int index, void *block,
                                  unsigned int width, unsigned int height,
                                  unsigned char compression,
@@ -880,7 +915,7 @@ DataSourceAmiga::get_data_from_catalog(size_t catalog_index, size_t index,
   return (unsigned char*)base + offset;
 }
 
-SpriteAmiga *
+DataSourceAmiga::SpriteAmiga *
 DataSourceAmiga::get_ground_sprite(unsigned int index) {
   uint8_t *data = get_data_from_catalog(4, index, gfxchip);
   if (data == NULL) {
@@ -938,7 +973,7 @@ DataSourceAmiga::get_ground_mask_sprite(unsigned int index) {
   return sprite;
 }
 
-SpriteAmiga *
+DataSourceAmiga::SpriteAmiga *
 DataSourceAmiga::get_mirrored_horizontaly_sprite(Sprite *sprite) {
   if (sprite == NULL) {
     return NULL;
@@ -952,9 +987,9 @@ DataSourceAmiga::get_mirrored_horizontaly_sprite(Sprite *sprite) {
   uint8_t *dst_pixels = reinterpret_cast<uint8_t*>(result->get_data()) +
                         result->get_width() * (result->get_height() - 1) * 4;
   for (unsigned int i = 0 ; i < sprite->get_height() ; i++) {
-      memcpy(dst_pixels, src_pixels, sprite->get_width() * 4);
-      src_pixels += sprite->get_width() * 4;
-      dst_pixels -= sprite->get_width() * 4;
+    memcpy(dst_pixels, src_pixels, sprite->get_width() * 4);
+    src_pixels += sprite->get_width() * 4;
+    dst_pixels -= sprite->get_width() * 4;
   }
 
   return result;
@@ -981,7 +1016,7 @@ DataSourceAmiga::get_path_mask_sprite(unsigned int index) {
   return sprite;
 }
 
-SpriteAmiga *
+DataSourceAmiga::SpriteAmiga *
 DataSourceAmiga::decode_mask_sprite(void *data, unsigned int width,
                                     unsigned int height) {
   SpriteAmiga *sprite = new SpriteAmiga(width, height);
@@ -1220,7 +1255,7 @@ unsigned int hud_offsets[] = {
   3728,  40, 1, 10,
 };
 
-SpriteAmiga *
+DataSourceAmiga::SpriteAmiga *
 DataSourceAmiga::get_hud_sprite(unsigned int index) {
   uint8_t *data = reinterpret_cast<uint8_t*>(data_pointers[18]);
   data += hud_offsets[index*4];
@@ -1229,7 +1264,7 @@ DataSourceAmiga::get_hud_sprite(unsigned int index) {
                                   hud_offsets[index*4 + 3], 16, 0, palette2);
 }
 
-SpriteAmiga *
+DataSourceAmiga::SpriteAmiga *
 DataSourceAmiga::decode_planned_sprite(void *data, unsigned int width,
                                        unsigned int height,
                                        uint8_t compression,
@@ -1238,7 +1273,7 @@ DataSourceAmiga::decode_planned_sprite(void *data, unsigned int width,
   SpriteAmiga *sprite = new SpriteAmiga(width*8, height);
 
   uint8_t *src = reinterpret_cast<uint8_t*>(data);
-  Color *res = sprite->get_writable_data();
+  Sprite::Color *res = sprite->get_writable_data();
 
   size_t bps = width * height;  // bitplane size in bytes
 
@@ -1272,7 +1307,7 @@ DataSourceAmiga::decode_planned_sprite(void *data, unsigned int width,
   return sprite;
 }
 
-SpriteAmiga *
+DataSourceAmiga::SpriteAmiga *
 DataSourceAmiga::decode_interlased_sprite(void *data, unsigned int width,
                                           unsigned int height,
                                           uint8_t compression,
@@ -1282,7 +1317,7 @@ DataSourceAmiga::decode_interlased_sprite(void *data, unsigned int width,
   SpriteAmiga *sprite = new SpriteAmiga(width*8, height);
 
   uint8_t *src = reinterpret_cast<uint8_t*>(data);
-  Color *res = sprite->get_writable_data();
+  Sprite::Color *res = sprite->get_writable_data();
 
   size_t bpp = bitplane_count_from_compression(compression);
 
@@ -1317,7 +1352,7 @@ DataSourceAmiga::decode_interlased_sprite(void *data, unsigned int width,
   return sprite;
 }
 
-SpriteAmiga *
+DataSourceAmiga::SpriteAmiga *
 DataSourceAmiga::decode_amiga_sprite(void *data, unsigned int width,
                                      unsigned int height,
                                      uint8_t *palette) {
@@ -1326,7 +1361,7 @@ DataSourceAmiga::decode_amiga_sprite(void *data, unsigned int width,
   uint8_t *src_1 = reinterpret_cast<uint8_t*>(data);
   size_t bp2s = width * 2 * height;
   uint8_t *src_2 = src_1 + bp2s;
-  Color *res = sprite->get_writable_data();
+  Sprite::Color *res = sprite->get_writable_data();
 
   for (size_t y = 0; y < height; y++) {
     for (size_t i = 0; i < width; i++) {
@@ -1353,7 +1388,8 @@ DataSourceAmiga::decode_amiga_sprite(void *data, unsigned int width,
   return sprite;
 }
 
-SpriteAmiga::SpriteAmiga(unsigned int width, unsigned int height) {
+DataSourceAmiga::SpriteAmiga::SpriteAmiga(unsigned int width,
+                                          unsigned int height) {
   this->width = width;
   this->height = height;
   delta_x = 0;
@@ -1365,48 +1401,16 @@ SpriteAmiga::SpriteAmiga(unsigned int width, unsigned int height) {
   memset(data, 0, size);
 }
 
-SpriteAmiga::~SpriteAmiga() {
-  delete[] data;
+DataSourceAmiga::SpriteAmiga::~SpriteAmiga() {
 }
 
-SpriteAmiga *
-SpriteAmiga::get_amiga_masked(Sprite *mask) {
+DataSourceAmiga::SpriteAmiga *
+DataSourceAmiga::SpriteAmiga::get_amiga_masked(Sprite *mask) {
   if (mask->get_width() > width) {
     assert(0);
   }
 
   SpriteAmiga *masked = new SpriteAmiga(mask->get_width(), mask->get_height());
-
-  uint32_t *pos = reinterpret_cast<uint32_t*>(masked->get_data());
-
-  uint32_t *s_beg = reinterpret_cast<uint32_t*>(data);
-  uint32_t *s_pos = s_beg;
-  uint32_t *s_end = s_beg + (width * height);
-  size_t s_delta = width - masked->get_width();
-
-  uint32_t *m_pos = reinterpret_cast<uint32_t*>(mask->get_data());
-
-  for (size_t y = 0; y < masked->get_height(); y++) {
-    for (size_t x = 0; x < masked->get_width(); x++) {
-      if (s_pos >= s_end) {
-        s_pos = s_beg;
-      }
-      *pos++ = *s_pos++ & *m_pos++;
-    }
-    s_pos += s_delta;
-  }
-
-  return masked;
-}
-
-Sprite *
-SpriteAmiga::get_masked(Sprite *mask) {
-  if (mask->get_width() > width) {
-    assert(0);
-  }
-
-  SpriteAmiga *masked = new SpriteAmiga(mask->get_width(), mask->get_height());
-  masked->set_offset(mask->get_offset_x(), mask->get_offset_y());
 
   uint32_t *pos = reinterpret_cast<uint32_t*>(masked->get_data());
 
@@ -1431,7 +1435,7 @@ SpriteAmiga::get_masked(Sprite *mask) {
 }
 
 void
-SpriteAmiga::make_transparent(uint32_t rc) {
+DataSourceAmiga::SpriteAmiga::make_transparent(uint32_t rc) {
   uint32_t *p = reinterpret_cast<uint32_t*>(data);
   for (unsigned int y = 0; y < height; y++) {
     for (unsigned int x = 0; x < width; x++) {
@@ -1443,8 +1447,8 @@ SpriteAmiga::make_transparent(uint32_t rc) {
   }
 }
 
-SpriteAmiga *
-SpriteAmiga::merge_horizontaly(SpriteAmiga *right) {
+DataSourceAmiga::SpriteAmiga *
+DataSourceAmiga::SpriteAmiga::merge_horizontaly(SpriteAmiga *right) {
   if (right->height != height) {
     return NULL;
   }
@@ -1466,8 +1470,8 @@ SpriteAmiga::merge_horizontaly(SpriteAmiga *right) {
   return result;
 }
 
-SpriteAmiga *
-SpriteAmiga::split_horizontaly(bool return_right) {
+DataSourceAmiga::SpriteAmiga *
+DataSourceAmiga::SpriteAmiga::split_horizontaly(bool return_right) {
   unsigned int res_width = width/2;
   SpriteAmiga *s = new SpriteAmiga(res_width, height);
   uint32_t *src = reinterpret_cast<uint32_t*>(data);
@@ -1483,71 +1487,4 @@ SpriteAmiga::split_horizontaly(bool return_right) {
   }
 
   return s;
-}
-
-void
-SpriteAmiga::stick(SpriteAmiga *sticker, unsigned int x, unsigned int y) {
-  uint32_t *base = reinterpret_cast<uint32_t*>(data);
-  uint32_t *stkr = reinterpret_cast<uint32_t*>(sticker->data);
-
-  base += y * width;
-  for (size_t y = 0; y < sticker->height; y++) {
-    base += x;
-    for (size_t x = 0; x < sticker->width; x++) {
-      uint32_t pixel = *stkr++;
-      if ((pixel & 0xFF000000) != 0) {
-        *base = pixel;
-      }
-      base++;
-    }
-  }
-}
-
-void
-SpriteAmiga::fill(Color color) {
-  Color *c = get_writable_data();
-  for (unsigned int i = 0; i < (width * height); i++) {
-    *c++ = color;
-  }
-}
-
-void
-SpriteAmiga::fill_masked(Color color) {
-  Color *c = get_writable_data();
-  for (unsigned int i = 0; i < (width * height); i++) {
-    Color *cc = c++;
-    if (cc->alpha != 0x00) {
-      *cc = color;
-    }
-  }
-}
-
-PaletteAmiga::PaletteAmiga(uint8_t *palette_amiga) {
-  this->palette_amiga = palette_amiga;
-}
-
-Color
-PaletteAmiga::get_color(size_t index) const {
-  Color color = {0, 0, 0, 0};
-
-  if (index < 32) {
-    color.red   = palette_amiga[index*3+0];  // R
-    color.green = palette_amiga[index*3+1];  // G
-    color.blue  = palette_amiga[index*3+2];  // B
-    color.alpha = 0xFF;                      // A
-  }
-
-  return color;
-}
-
-Palette *
-DataSourceAmiga::get_palette(unsigned int index) {
-  Palette *res = NULL;
-
-  if (index < 3) {
-    uint8_t *pals[3] = {palette, palette3, palette2};
-    res = new PaletteAmiga(pals[index]);
-  }
-
-  return res;
 }
