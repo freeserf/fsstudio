@@ -21,12 +21,11 @@
 
 #include "src/data-source-amiga.h"
 
-#ifdef ENABLE_XMP
-#include <xmp.h>
-#endif  // ENABLE_XMP
-
+#include <cstdint>
+#include <cstddef>
 #include <cstdlib>
 #include <cassert>
+#include <cstring>
 #include <vector>
 #include <sstream>
 #include <string>
@@ -35,9 +34,9 @@
 # include "config.h"
 #endif
 
-#ifdef HAVE_CSTDINT
-# include <cstdint>
-#endif
+#ifdef ENABLE_XMP
+#include <xmp.h>
+#endif  // ENABLE_XMP
 
 #include "src/data.h"
 #include "src/freeserf_endian.h"
@@ -387,7 +386,8 @@ DataSourceAmiga::get_sprite(Data::Resource res, unsigned int index,
       if (gfxpics != NULL) {
         pics_t::iterator it = pics.find(index);
         if (it != pics.end()) {
-          sprite = decode_interlased_sprite(pics[index], 16, 144, 0, 0, palette);
+          sprite = decode_interlased_sprite(pics[index], 16, 144, 0, 0,
+                                            palette);
         } else {
           uint32_t *infos = reinterpret_cast<uint32_t*>(gfxpics);
           size_t offset = infos[index*2];
@@ -401,7 +401,8 @@ DataSourceAmiga::get_sprite(Data::Resource res, unsigned int index,
       }
       break;
     case Data::AssetCreditsBg:
-      sprite = decode_interlased_sprite(data_pointers[23], 40, 200, 0, 0, palette_intro);
+      sprite = decode_interlased_sprite(data_pointers[23], 40, 200, 0, 0,
+                                        palette_intro);
       break;
     case Data::AssetLogo: {
       uint8_t *data = reinterpret_cast<uint8_t*>(gfxfast);
@@ -1174,7 +1175,11 @@ DataSourceAmiga::get_map_object_sprite(unsigned int index) {
 
   SpriteAmiga *sprite = pixels->get_amiga_masked(mask);
   sprite->set_delta(1, 0);
-  sprite->set_offset(-header.width * 4, -header.offset_y);
+  if ((index >= 128) && (index <= 143)) {
+    sprite->set_offset(0, -header.offset_y);
+  } else {
+    sprite->set_offset(-header.width * 4, -header.offset_y);
+  }
 
   delete mask;
   delete pixels;
@@ -1199,19 +1204,18 @@ DataSourceAmiga::get_map_object_shadow(unsigned int index) {
     header.width = header.bitplane_size / header.height;
   }
   uint8_t *shadow = data + header.shadow_offset;
+  int8_t *shadow_header = reinterpret_cast<int8_t*>(shadow);
+  shadow += 4;
 
-  unsigned int shadow_scanline_size = *(shadow+3);
-  unsigned int shadow_height = *(shadow+1);
+  unsigned int shadow_scanline_size = shadow_header[3];
+  unsigned int shadow_height = shadow_header[1];
   unsigned int shadow_size = shadow_scanline_size * shadow_height;
 
   SpriteAmiga *sprite = new SpriteAmiga(shadow_scanline_size * 8,
                                         shadow_height);
   sprite->clear();
-  sprite->set_delta(*(shadow+2), *(shadow+3));
-  sprite->set_offset(0 /* *(shadow) */,
-                     -header.offset_y + header.height - *(shadow+1));
-
-  shadow += 4;
+  sprite->set_delta(0, 0);
+  sprite->set_offset(shadow_header[2] * 8, -shadow_header[0]);
 
   uint32_t *pixel = reinterpret_cast<uint32_t*>(sprite->get_data());
   uint32_t *end = pixel + sprite->get_width()*sprite->get_height();

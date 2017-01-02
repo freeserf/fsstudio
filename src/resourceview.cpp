@@ -30,7 +30,6 @@
 
 #include "src/data-source.h"
 #include "src/spriteview.h"
-#include "src/paletteview.h"
 #include "src/audioview.h"
 #include "src/animationview.h"
 
@@ -52,10 +51,6 @@ FSSResourceView::FSSResourceView(DataSource *source,
   viewSprite = new FSSSpriteView(this);
   viewSprite->setMinimumSize(200, 200);
   resourcesStack->addWidget(viewSprite);
-
-  viewPalette = new FSSPaletteView(this);
-  viewPalette->setMinimumSize(200, 200);
-  resourcesStack->addWidget(viewPalette);
 
   viewAudio = new FSSAudioView(this);
   viewAudio->setMinimumSize(200, 200);
@@ -107,7 +102,7 @@ FSSResourceView::onResourceSelected(Data::Resource resource_class,
   if (resource_class != Data::AssetNone) {
     switch (Data::get_resource_type(resource_class)) {
       case Data::TypeSprite: {
-        Sprite *sprite = source->get_sprite(resource_class, index, 0);
+        Sprite *sprite = source->get_sprite(resource_class, index, {0,0,0,0});
         viewSprite->setSprite(sprite);
         if (sprite != NULL) {
           info = spriteInfo(sprite);
@@ -135,16 +130,6 @@ FSSResourceView::onResourceSelected(Data::Resource resource_class,
         void *data = source->get_music(index, &size);
         viewAudio->setAudioData(data, size, "mid");
         resView = viewAudio;
-        break;
-      }
-      case Data::TypePalette: {
-        Palette *palette = source->get_palette(index);
-        viewPalette->setPalette(palette);
-        if (palette != NULL) {
-          info = QString::asprintf("Palette:\n%zu colors",
-                                   palette->get_size());
-        }
-        resView = viewPalette;
         break;
       }
       case Data::TypeUnknown: {

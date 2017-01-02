@@ -81,7 +81,7 @@ FSSResourceModel::parent(const QModelIndex &index) const {
 int
 FSSResourceModel::rowCount(const QModelIndex &parent) const {
   if (!parent.isValid()) {
-    return static_cast<int>(Data::AssetPalette);
+    return static_cast<int>(Data::AssetCursor);
   }
 
   QModelIndex p = parent.parent();

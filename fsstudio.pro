@@ -39,7 +39,6 @@ SOURCES += src/main.cpp\
     src/resourcemodel.cpp \
     src/resourceview.cpp \
     src/sourcesview.cpp \
-    src/paletteview.cpp \
     src/spriteview.cpp \
     src/audioview.cpp \
     src/animationview.cpp
@@ -57,7 +56,6 @@ HEADERS  += src/mainwindow.h \
     src/resourcemodel.h \
     src/resourceview.h \
     src/sourcesview.h \
-    src/paletteview.h \
     src/spriteview.h \
     src/audioview.h \
     src/animationview.h

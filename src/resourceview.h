@@ -29,7 +29,6 @@
 class DataSource;
 class QTextBrowser;
 class FSSSpriteView;
-class FSSPaletteView;
 class FSSAudioView;
 class FSSAnimationView;
 class QStackedLayout;
@@ -44,7 +43,6 @@ class FSSResourceView : public QWidget {
   QTextBrowser *textBrowser;
 
   FSSSpriteView *viewSprite;
-  FSSPaletteView *viewPalette;
   FSSAudioView *viewAudio;
   FSSAnimationView *viewAnimation;
   QWidget *viewEmpty;
