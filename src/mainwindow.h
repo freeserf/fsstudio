@@ -47,6 +47,7 @@ class FSSMainWindow : public QMainWindow {
  public slots:
   void onCurrentChanged(const QModelIndex &current,
                         const QModelIndex &previous);
+  void exportSource();
 };
 
 #endif  // SRC_MAINWINDOW_H_

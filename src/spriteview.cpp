@@ -130,7 +130,7 @@ FSSSpriteView::getPixmap() {
 
   QImage image = getImage();
   QPixmap pixmap = QPixmap::fromImage(image);
-
+/*
   QPainter p(&pixmap);
   p.setPen(Qt::black);
   p.drawLine(-sprite->get_offset_x() - 1, -sprite->get_offset_y(),
@@ -138,7 +138,7 @@ FSSSpriteView::getPixmap() {
   p.drawLine(-sprite->get_offset_x(), -sprite->get_offset_y() - 1,
              -sprite->get_offset_x(), -sprite->get_offset_y() + 1);
   p.end();
-
+*/
   return pixmap;
 }
 

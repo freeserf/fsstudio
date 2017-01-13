@@ -21,7 +21,7 @@
 
 QT += core gui multimedia
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets xml
 
 TARGET = FSStudio
 TEMPLATE = app
@@ -41,7 +41,8 @@ SOURCES += src/main.cpp\
     src/sourcesview.cpp \
     src/spriteview.cpp \
     src/audioview.cpp \
-    src/animationview.cpp
+    src/animationview.cpp \
+    src/exporter.cpp
 
 HEADERS  += src/mainwindow.h \
     freeserf/src/data-source-amiga.h \
@@ -58,7 +59,8 @@ HEADERS  += src/mainwindow.h \
     src/sourcesview.h \
     src/spriteview.h \
     src/audioview.h \
-    src/animationview.h
+    src/animationview.h \
+    src/exporter.h
 
 INCLUDEPATH += .
 INCLUDEPATH += freeserf

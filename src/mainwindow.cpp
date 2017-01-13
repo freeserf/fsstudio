@@ -26,6 +26,7 @@
 #include <QHBoxLayout>
 #include <QSplitter>
 #include <QStandardPaths>
+#include <QMenuBar>
 
 #include "src/resourcemodel.h"
 #include "src/sourcesview.h"
@@ -79,6 +80,12 @@ FSSMainWindow::FSSMainWindow(QWidget *parent)
   connect(this, SIGNAL(resourceSelected(Data::Resource, unsigned int)),
           viewSources, SLOT(onResourceSelected(Data::Resource,
                                                unsigned int)));
+
+  QMenuBar *menuBar = this->menuBar();
+
+  QMenu *menuFile = new QMenu("File", this);
+  menuFile->addAction("Export", this, SLOT(exportSource()));
+  menuBar->addMenu(menuFile);
 }
 
 FSSMainWindow::~FSSMainWindow() {
@@ -96,4 +103,9 @@ FSSMainWindow::onCurrentChanged(const QModelIndex &current,
   }
 
   emit resourceSelected(resource_class, index);
+}
+
+void
+FSSMainWindow::exportSource() {
+  int ggg = 0;
 }
