@@ -1,2 +1,6 @@
 
 *.user
+Makefile*
+debug
+release
+.qmake.stash
