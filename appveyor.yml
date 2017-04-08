@@ -10,11 +10,11 @@ configuration:
 
 install:
   - git submodule update --init --recursive
-  - set PATH=%PATH%;%QTDIR%\bin
   - if "%platform%" == "x86" call set QTDIR=C:\Qt\5.8\msvc2015
   - if "%platform%" == "x64" call set QTDIR=C:\Qt\5.8\msvc2015_64
   - if "%platform%" == "x86" call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat"
   - if "%platform%" == "x64" call "%VS140COMNTOOLS%\..\..\VC\vcvarsall.bat" x86_amd64
+  - set PATH=%PATH%;%QTDIR%\bin
 
 build_script:
   - qmake fsstudio.pro
