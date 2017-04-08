@@ -18,7 +18,7 @@ install:
 
 build_script:
   - qmake fsstudio.pro
-  - call "nmake /f Makefile.$env:CONFIGURATION"
+  - nmake /f Makefile.%CONFIGURATION%
 
 after_build:
   - ps: |
