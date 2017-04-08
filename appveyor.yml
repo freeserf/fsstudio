@@ -32,10 +32,10 @@ after_build:
       } Else {
         $QT_SUFFIX = "d.dll"
       }
-      Copy-Item -Path $env:QTDIR\Qt5Core$QT_SUFFIX -Destination $ZIP_BASE\
-      Copy-Item -Path $env:QTDIR\Qt5Gui$QT_SUFFIX -Destination $ZIP_BASE\
-      Copy-Item -Path $env:QTDIR\Qt5Multimedia$QT_SUFFIX -Destination $ZIP_BASE\
-      Copy-Item -Path $env:QTDIR\Qt5Network$QT_SUFFIX -Destination $ZIP_BASE\
-      Copy-Item -Path $env:QTDIR\Qt5Widgets$QT_SUFFIX -Destination $ZIP_BASE\
+      Copy-Item -Path $env:QTDIR\bin\Qt5Core$QT_SUFFIX -Destination $ZIP_BASE\
+      Copy-Item -Path $env:QTDIR\bin\Qt5Gui$QT_SUFFIX -Destination $ZIP_BASE\
+      Copy-Item -Path $env:QTDIR\bin\Qt5Multimedia$QT_SUFFIX -Destination $ZIP_BASE\
+      Copy-Item -Path $env:QTDIR\bin\Qt5Network$QT_SUFFIX -Destination $ZIP_BASE\
+      Copy-Item -Path $env:QTDIR\bin\Qt5Widgets$QT_SUFFIX -Destination $ZIP_BASE\
       7z a $ZIP_FILE $ZIP_BASE\*
       Push-AppveyorArtifact $ZIP_FILE
