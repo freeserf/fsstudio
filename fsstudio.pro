@@ -42,7 +42,9 @@ SOURCES += src/main.cpp\
     src/spriteview.cpp \
     src/audioview.cpp \
     src/animationview.cpp \
-    src/exporter.cpp
+    src/exporter.cpp \
+    src/exportdialog.cpp \
+    src/qpathedit.cpp
 
 HEADERS  += src/mainwindow.h \
     freeserf/src/data-source-amiga.h \
@@ -60,7 +62,9 @@ HEADERS  += src/mainwindow.h \
     src/spriteview.h \
     src/audioview.h \
     src/animationview.h \
-    src/exporter.h
+    src/exporter.h \
+    src/exportdialog.h \
+    src/qpathedit.h
 
 INCLUDEPATH += .
 INCLUDEPATH += freeserf

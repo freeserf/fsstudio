@@ -23,6 +23,10 @@
 #define SRC_EXPORTER_H_
 
 #include <QObject>
+#include <QDir>
+#include <QColor>
+
+#include "src/data.h"
 
 class DataSource;
 
@@ -32,12 +36,20 @@ class FSSExporter : public QObject {
  protected:
   DataSource *source;
   QString path;
+  unsigned int scale;
+  QDir dir;
+  QColor color;
 
  public:
-  FSSExporter(DataSource *source, QString path);
+  FSSExporter(DataSource *source, QString path, unsigned int scale = 1);
   virtual ~FSSExporter();
 
+  void set_color(const QColor &_color) { color = _color; }
   bool do_export();
+
+ protected:
+  void exportResourceData(Data::Resource res, QString ext);
+  void exportResourceSprite(Data::Resource res);
 };
 
 #endif  // SRC_EXPORTER_H_
