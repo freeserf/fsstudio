@@ -27,6 +27,8 @@
 #include <QSplitter>
 #include <QStandardPaths>
 #include <QMenuBar>
+#include <QFileDialog>
+#include <QSettings>
 
 #include "src/resourcemodel.h"
 #include "src/sourcesview.h"
@@ -35,6 +37,7 @@
 #include "src/data-source.h"
 #include "src/data-source-dos.h"
 #include "src/data-source-amiga.h"
+#include "src/exportdialog.h"
 
 DataSource *data_source_dos;
 DataSource *data_source_amiga;
@@ -107,5 +110,8 @@ FSSMainWindow::onCurrentChanged(const QModelIndex &current,
 
 void
 FSSMainWindow::exportSource() {
-  int ggg = 0;
+  FSSExportDialog dialog;
+  dialog.add_source(data_source_dos);
+  dialog.add_source(data_source_amiga);
+  dialog.exec();
 }

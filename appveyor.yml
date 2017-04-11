@@ -37,5 +37,7 @@ after_build:
       Copy-Item -Path $env:QTDIR\bin\Qt5Multimedia$QT_SUFFIX -Destination $ZIP_BASE\
       Copy-Item -Path $env:QTDIR\bin\Qt5Network$QT_SUFFIX -Destination $ZIP_BASE\
       Copy-Item -Path $env:QTDIR\bin\Qt5Widgets$QT_SUFFIX -Destination $ZIP_BASE\
+      md $ZIP_BASE\platforms
+      Copy-Item -Path $env:QTDIR\plugins\platforms\qwindows$QT_SUFFIX -Destination $ZIP_BASE\platforms
       7z a $ZIP_FILE $ZIP_BASE\*
       Push-AppveyorArtifact $ZIP_FILE

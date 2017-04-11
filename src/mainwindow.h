@@ -24,6 +24,7 @@
 
 #include <QMainWindow>
 #include <QTreeView>
+#include <QDir>
 
 #include "src/data.h"
 
