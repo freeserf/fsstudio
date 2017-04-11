@@ -24,11 +24,12 @@
 
 #include <QMainWindow>
 #include <QTreeView>
-#include <QDir>
+#include <QMap>
 
 #include "src/data.h"
 
 class FSSResourceModel;
+class FSSSourcesView;
 
 class FSSMainWindow : public QMainWindow {
   Q_OBJECT
@@ -40,6 +41,8 @@ class FSSMainWindow : public QMainWindow {
  private:
   QTreeView *treeResources;
   FSSResourceModel *resourceModel;
+  FSSSourcesView *viewSources;
+  QMap<QAction*, DataSource*> actions;
 
  signals:
   void resourceSelected(Data::Resource resource_class,
@@ -49,6 +52,7 @@ class FSSMainWindow : public QMainWindow {
   void onCurrentChanged(const QModelIndex &current,
                         const QModelIndex &previous);
   void exportSource();
+  void switchSource(bool);
 };
 
 #endif  // SRC_MAINWINDOW_H_

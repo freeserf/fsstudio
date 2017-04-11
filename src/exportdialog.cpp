@@ -85,6 +85,10 @@ FSSExportDialog::~FSSExportDialog() {
 
 void
 FSSExportDialog::add_source(DataSource *data_source) {
+  if (data_source == nullptr) {
+    return;
+  }
+
   sources.push_back(data_source);
   field_source->addItem(data_source->get_name());
 

@@ -36,7 +36,7 @@
 FSSResourceView::FSSResourceView(DataSource *source,
                                  QWidget *parent)
   : QWidget(parent) {
-  this->source = source;
+  theSource = source;
 
   QVBoxLayout *layout = new QVBoxLayout(this);
   setLayout(layout);
@@ -102,7 +102,7 @@ FSSResourceView::onResourceSelected(Data::Resource resource_class,
   if (resource_class != Data::AssetNone) {
     switch (Data::get_resource_type(resource_class)) {
       case Data::TypeSprite: {
-        Sprite *sprite = source->get_sprite(resource_class, index, {0,0,0,0});
+        Sprite *sprite = theSource->get_sprite(resource_class, index, {0,0,0,0});
         viewSprite->setSprite(sprite);
         if (sprite != NULL) {
           info = spriteInfo(sprite);
@@ -120,14 +120,14 @@ FSSResourceView::onResourceSelected(Data::Resource resource_class,
       }
       case Data::TypeSound: {
         size_t size = 0;
-        void *data = source->get_sound(index, &size);
+        void *data = theSource->get_sound(index, &size);
         viewAudio->setAudioData(data, size, "wav");
         resView = viewAudio;
         break;
       }
       case Data::TypeMusic: {
         size_t size = 0;
-        void *data = source->get_music(index, &size);
+        void *data = theSource->get_music(index, &size);
         viewAudio->setAudioData(data, size, "mid");
         resView = viewAudio;
         break;
