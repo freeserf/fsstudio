@@ -21,6 +21,8 @@
 
 #include "src/sourcesview.h"
 
+#include <QMenuBar>
+
 #include "src/resourceview.h"
 
 FSSSourcesView::FSSSourcesView(QWidget *parent)
@@ -42,4 +44,19 @@ void
 FSSSourcesView::onResourceSelected(Data::Resource resource_class,
                                    unsigned int index) {
   emit resourceSelected(resource_class, index);
+}
+
+void
+FSSSourcesView::showSource(DataSource *source, bool show) {
+  FSSResourceView *view;
+  foreach (view, sourceViews) {
+    if (view->source() == source) {
+      if (show) {
+          view->show();
+      } else {
+          view->hide();
+      }
+      return;
+    }
+  }
 }

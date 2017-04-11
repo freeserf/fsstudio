@@ -37,7 +37,7 @@ class FSSResourceView : public QWidget {
   Q_OBJECT
 
  protected:
-  DataSource *source;
+  DataSource *theSource;
 
   QStackedLayout *resourcesStack;
   QTextBrowser *textBrowser;
@@ -50,6 +50,8 @@ class FSSResourceView : public QWidget {
  public:
   explicit FSSResourceView(DataSource *source, QWidget *parent = 0);
   virtual ~FSSResourceView();
+
+  DataSource *source() { return theSource; }
 
  public slots:
   void onResourceSelected(Data::Resource resource_class,

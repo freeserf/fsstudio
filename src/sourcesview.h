@@ -44,6 +44,7 @@ class FSSSourcesView : public QSplitter {
  public slots:
   void addSource(DataSource *source);
   void onResourceSelected(Data::Resource resource_class, unsigned int index);
+  void showSource(DataSource *source, bool show);
 };
 
 #endif  // SRC_SOURCESVIEW_H_

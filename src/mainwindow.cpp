@@ -53,27 +53,44 @@ FSSMainWindow::FSSMainWindow(QWidget *parent)
   resourceModel = new FSSResourceModel();
   treeResources->setModel(resourceModel);
 
-  FSSSourcesView *viewSources = new FSSSourcesView(mainSplitter);
+  viewSources = new FSSSourcesView(mainSplitter);
   viewSources->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
   QString path = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
   path += "/.local/share/freeserf";
   QString path_dos = path + "/spae.pa";
 
+  QMenuBar *menuBar = this->menuBar();
+
+  QMenu *menuFile = new QMenu("File", this);
+  menuFile->addAction("Export", this, SLOT(exportSource()));
+  menuBar->addMenu(menuFile);
+
+  QMenu *menuView = new QMenu("View", this);
+  menuBar->addMenu(menuView);
+
   data_source_dos = new DataSourceDOS();
   if (!data_source_dos->load(path_dos.toLocal8Bit().data())) {
     delete data_source_dos;
-    data_source_dos = NULL;
+    data_source_dos = nullptr;
   } else {
     viewSources->addSource(data_source_dos);
+    QAction *action = menuView->addAction("DOS", this, SLOT(switchSource(bool)));
+    action->setCheckable(true);
+    action->setChecked(true);
+    actions[action] = data_source_dos;
   }
 
   data_source_amiga = new DataSourceAmiga();
   if (!data_source_amiga->load(path.toLocal8Bit().data())) {
     delete data_source_amiga;
-    data_source_amiga = NULL;
+    data_source_amiga = nullptr;
   } else {
     viewSources->addSource(data_source_amiga);
+    QAction *action = menuView->addAction("Amiga", this, SLOT(switchSource(bool)));
+    action->setCheckable(true);
+    action->setChecked(true);
+    actions[action] = data_source_amiga;
   }
 
   connect(treeResources->selectionModel(),
@@ -83,12 +100,6 @@ FSSMainWindow::FSSMainWindow(QWidget *parent)
   connect(this, SIGNAL(resourceSelected(Data::Resource, unsigned int)),
           viewSources, SLOT(onResourceSelected(Data::Resource,
                                                unsigned int)));
-
-  QMenuBar *menuBar = this->menuBar();
-
-  QMenu *menuFile = new QMenu("File", this);
-  menuFile->addAction("Export", this, SLOT(exportSource()));
-  menuBar->addMenu(menuFile);
 }
 
 FSSMainWindow::~FSSMainWindow() {
@@ -96,7 +107,7 @@ FSSMainWindow::~FSSMainWindow() {
 
 void
 FSSMainWindow::onCurrentChanged(const QModelIndex &current,
-                               const QModelIndex & /*previous*/) {
+                                const QModelIndex & /*previous*/) {
   Data::Resource resource_class = Data::AssetNone;
   unsigned int index = 0;
 
@@ -114,4 +125,11 @@ FSSMainWindow::exportSource() {
   dialog.add_source(data_source_dos);
   dialog.add_source(data_source_amiga);
   dialog.exec();
+}
+
+void
+FSSMainWindow::switchSource(bool checked) {
+  QAction *action = (QAction*)sender();
+  DataSource *source = actions[action];
+  viewSources->showSource(source, checked);
 }
