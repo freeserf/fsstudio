@@ -12,21 +12,20 @@
 #include <QTimer>
 #include <QAction>
 #include <QPainter>
-#include <functional>
 #include <QKeyEvent>
 
 //HELPER CLASSES
 
 void masterDialog(QDialog *dialog);
 
-class PathValidator : public QValidator
-{
-public:
+class PathValidator : public QValidator {
+ public:
 	PathValidator(QObject *parent);
 	void setMode(QPathEdit::PathMode mode);
 	void setAllowEmpty(bool allow);
 	State validate(QString &text, int &) const Q_DECL_OVERRIDE;
-private:
+
+ private:
 	QPathEdit::PathMode mode;
 	bool allowEmpty;
 };
@@ -34,13 +33,14 @@ private:
 //QPATHEDIT IMPLEMENTATION
 
 QPathEdit::QPathEdit(QWidget *parent, QPathEdit::Style style) :
-	QPathEdit(ExistingFile, parent, style)
-{}
+	QPathEdit(ExistingFile, parent, style) {
+}
 
-QPathEdit::QPathEdit(QPathEdit::PathMode pathMode, QWidget *parent, QPathEdit::Style style) :
-	QWidget(parent),
-	edit(new QLineEdit(this)),
-	pathCompleter(new QCompleter(this)),
+QPathEdit::QPathEdit(QPathEdit::PathMode pathMode, QWidget *parent,
+                     QPathEdit::Style style)
+  : QWidget(parent)
+  , edit(new QLineEdit(this))
+  , pathCompleter(new QCompleter(this)),
 	completerModel(new QFileSystemModel(this)),
 	pathValidator(new PathValidator(this)),
 	dialog(new QFileDialog(this)),
@@ -55,7 +55,6 @@ QPathEdit::QPathEdit(QPathEdit::PathMode pathMode, QWidget *parent, QPathEdit::S
 	hasCustomIcon(false)
 {
 	//setup dialog
-	dialog->setOptions(0);
 	masterDialog(dialog);
 	setPathMode(pathMode);
 	connect(dialog, &QFileDialog::fileSelected, this, &QPathEdit::dialogFileSelected);
@@ -63,9 +62,8 @@ QPathEdit::QPathEdit(QPathEdit::PathMode pathMode, QWidget *parent, QPathEdit::S
 	//setup completer
 	completerModel->setRootPath("");
 	completerModel->setNameFilterDisables(false);
-	connect(completerModel, &QFileSystemModel::directoryLoaded, pathCompleter, [this](QString){
-		pathCompleter->complete();
-	});
+	connect(completerModel, &QFileSystemModel::directoryLoaded, pathCompleter,
+          [this](QString){ pathCompleter->complete(); });
 	pathCompleter->setModel(completerModel);
 
 	//setup this
@@ -92,13 +90,13 @@ QPathEdit::QPathEdit(QPathEdit::PathMode pathMode, QWidget *parent, QPathEdit::S
 #endif
 	toolButton->setFixedSize(height, height);
 	switch(style) {
-	case JoinedButton:
-		edit->addAction(dialogAction, QLineEdit::TrailingPosition);
-	case NoButton:
-		toolButton->setVisible(false);
-		break;
-	default:
-		break;
+	  case JoinedButton:
+		  edit->addAction(dialogAction, QLineEdit::TrailingPosition);
+	  case NoButton:
+		  toolButton->setVisible(false);
+		  break;
+	  default:
+		  break;
 	}
 
 	QWidget::setTabOrder(edit, toolButton);
@@ -106,218 +104,200 @@ QPathEdit::QPathEdit(QPathEdit::PathMode pathMode, QWidget *parent, QPathEdit::S
 	setFocusProxy(edit);
 }
 
-QPathEdit::QPathEdit(QPathEdit::PathMode pathMode, QString defaultDirectory, QWidget *parent, QPathEdit::Style style) :
-	QPathEdit(pathMode, parent, style)
-{
+QPathEdit::QPathEdit(QPathEdit::PathMode pathMode, QString defaultDirectory,
+                     QWidget *parent, QPathEdit::Style style)
+  : QPathEdit(pathMode, parent, style) {
 	setDefaultDirectory(defaultDirectory);
 }
 
-QPathEdit::PathMode QPathEdit::pathMode() const
-{
+QPathEdit::PathMode QPathEdit::pathMode() const {
 	return mode;
 }
 
-void QPathEdit::setPathMode(PathMode pathMode)
-{
+void QPathEdit::setPathMode(PathMode pathMode) {
 	mode = pathMode;
 	pathValidator->setMode(pathMode);
 	currentValidPath.clear();
 	emit pathChanged(QString());
 	edit->clear();
 	switch(pathMode) {
-	case ExistingFile:
-		dialog->setAcceptMode(QFileDialog::AcceptOpen);
-		dialog->setFileMode(QFileDialog::ExistingFile);
-		completerModel->setFilter(QDir::AllEntries | QDir::AllDirs | QDir::NoDotAndDotDot);
-		break;
-	case ExistingFolder:
-		dialog->setAcceptMode(QFileDialog::AcceptOpen);
-		dialog->setFileMode(QFileDialog::Directory);
-		completerModel->setFilter(QDir::Drives | QDir::Dirs | QDir::NoDotAndDotDot);
-		break;
-	case AnyFile:
-		dialog->setAcceptMode(QFileDialog::AcceptSave);
-		dialog->setFileMode(QFileDialog::AnyFile);
-		completerModel->setFilter(QDir::AllEntries | QDir::AllDirs | QDir::NoDotAndDotDot);
-		break;
-	default:
-		Q_UNREACHABLE();
+    case ExistingFile:
+      dialog->setAcceptMode(QFileDialog::AcceptOpen);
+      dialog->setFileMode(QFileDialog::ExistingFile);
+      completerModel->setFilter(QDir::AllEntries | QDir::AllDirs
+                                | QDir::NoDotAndDotDot);
+      break;
+    case ExistingFolder:
+      dialog->setAcceptMode(QFileDialog::AcceptOpen);
+      dialog->setFileMode(QFileDialog::Directory);
+      completerModel->setFilter(QDir::Drives | QDir::Dirs
+                                | QDir::NoDotAndDotDot);
+      break;
+    case AnyFile:
+      dialog->setAcceptMode(QFileDialog::AcceptSave);
+      dialog->setFileMode(QFileDialog::AnyFile);
+      completerModel->setFilter(QDir::AllEntries | QDir::AllDirs
+                                | QDir::NoDotAndDotDot);
+      break;
+    default:
+      Q_UNREACHABLE();
 	}
 }
 
-QFileDialog::Options QPathEdit::dialogOptions() const
-{
+QFileDialog::Options QPathEdit::dialogOptions() const {
 	return dialog->options();
 }
 
-void QPathEdit::setDialogOptions(QFileDialog::Options dialogOptions)
-{
+void QPathEdit::setDialogOptions(QFileDialog::Options dialogOptions) {
 	dialog->setOptions(dialogOptions);
 }
 
-bool QPathEdit::isEmptyPathAllowed() const
-{
+bool QPathEdit::isEmptyPathAllowed() const {
 	return allowEmpty;
 }
 
-void QPathEdit::setAllowEmptyPath(bool allowEmptyPath)
-{
+void QPathEdit::setAllowEmptyPath(bool allowEmptyPath) {
 	allowEmpty = allowEmptyPath;
 	pathValidator->setAllowEmpty(allowEmptyPath);
 }
 
-QString QPathEdit::defaultDirectory() const
-{
+QString QPathEdit::defaultDirectory() const {
 	return defaultDir;
 }
 
-void QPathEdit::setDefaultDirectory(QString defaultDirectory)
-{
+void QPathEdit::setDefaultDirectory(QString defaultDirectory) {
 	defaultDir = defaultDirectory;
 }
 
-QString QPathEdit::path() const
-{
+QString QPathEdit::path() const {
 	return currentValidPath;
 }
 
-QUrl QPathEdit::pathUrl() const
-{
+QUrl QPathEdit::pathUrl() const {
 	return QUrl::fromLocalFile(currentValidPath);
 }
 
-bool QPathEdit::setPath(QString path, bool allowInvalid)
-{
-	if (edit->text() == path)
+bool QPathEdit::setPath(QString path, bool allowInvalid) {
+    if (edit->text() == path) {
 		return true;
+    }
 
-	if(allowInvalid)
+    if(allowInvalid) {
 		edit->setText(path);
+    }
 
 	int pseudo = 0;
 	if(pathValidator->validate(path, pseudo) == QValidator::Acceptable) {
 		currentValidPath = path.replace(QStringLiteral("\\"), QStringLiteral("/"));
-		if(!allowInvalid)
+        if(!allowInvalid) {
 			edit->setText(path);
+        }
 		emit pathChanged(path);
 		return true;
-	} else
+    } else {
 		return false;
+    }
 }
 
-void QPathEdit::clear()
-{
+void QPathEdit::clear() {
 	edit->clear();
 	currentValidPath.clear();
 	emit pathChanged(QString());
 }
 
-QString QPathEdit::placeholder() const
-{
+QString QPathEdit::placeholder() const {
 	return edit->placeholderText();
 }
 
-void QPathEdit::setPlaceholder(QString placeholder)
-{
+void QPathEdit::setPlaceholder(QString placeholder) {
 	edit->setPlaceholderText(placeholder);
 }
 
-QStringList QPathEdit::nameFilters() const
-{
+QStringList QPathEdit::nameFilters() const {
 	return dialog->nameFilters();
 }
 
-void QPathEdit::setNameFilters(QStringList nameFilters)
-{
+void QPathEdit::setNameFilters(QStringList nameFilters) {
 	dialog->setNameFilters(nameFilters);
 	QStringList tmp = modelFilters(nameFilters);
 	completerModel->setNameFilters(tmp);
 }
 
-QStringList QPathEdit::mimeTypeFilters() const
-{
+QStringList QPathEdit::mimeTypeFilters() const {
 	return dialog->mimeTypeFilters();
 }
 
-void QPathEdit::setMimeTypeFilters(QStringList mimeFilters)
-{
+void QPathEdit::setMimeTypeFilters(QStringList mimeFilters) {
 	dialog->setMimeTypeFilters(mimeFilters);
 	QStringList tmp = modelFilters(dialog->nameFilters());
 	completerModel->setNameFilters(tmp);
 }
 
-bool QPathEdit::isEditable() const
-{
+bool QPathEdit::isEditable() const {
 	return !edit->isReadOnly();
 }
 
-void QPathEdit::setEditable(bool editable)
-{
+void QPathEdit::setEditable(bool editable) {
 	edit->setReadOnly(!editable);
 }
 
-bool QPathEdit::useCompleter() const
-{
+bool QPathEdit::useCompleter() const {
 	return edit->completer();
 }
 
-void QPathEdit::setUseCompleter(bool useCompleter)
-{
+void QPathEdit::setUseCompleter(bool useCompleter) {
 	edit->setCompleter(useCompleter ? pathCompleter : nullptr);
 }
 
-QPathEdit::Style QPathEdit::style() const
-{
+QPathEdit::Style QPathEdit::style() const {
 	return uiStyle;
 }
 
-void QPathEdit::setStyle(QPathEdit::Style style, QLineEdit::ActionPosition position)
-{
-	if (uiStyle == style)
+void QPathEdit::setStyle(QPathEdit::Style style,
+                         QLineEdit::ActionPosition position) {
+    if (uiStyle == style) {
 		return;
+    }
 
 	switch(style) {
-	case SeperatedButton:
-		edit->removeAction(dialogAction);
-		toolButton->setVisible(true);
-		break;
-	case JoinedButton:
-		edit->addAction(dialogAction, position);
-		toolButton->setVisible(false);
-		break;
-	case NoButton:
-		edit->removeAction(dialogAction);
-		toolButton->setVisible(false);
-		break;
-	default:
-		Q_UNREACHABLE();
-		break;
+    case SeperatedButton:
+      edit->removeAction(dialogAction);
+      toolButton->setVisible(true);
+      break;
+    case JoinedButton:
+      edit->addAction(dialogAction, position);
+      toolButton->setVisible(false);
+      break;
+    case NoButton:
+      edit->removeAction(dialogAction);
+      toolButton->setVisible(false);
+      break;
+    default:
+      Q_UNREACHABLE();
+      break;
 	}
 
 	uiStyle = style;
-	if(!hasCustomIcon)
+    if(!hasCustomIcon) {
 		dialogAction->setIcon(getDefaultIcon());
+    }
 }
 
-QIcon QPathEdit::dialogButtonIcon() const
-{
+QIcon QPathEdit::dialogButtonIcon() const {
 	return dialogAction->icon();
 }
 
-void QPathEdit::setDialogButtonIcon(const QIcon &icon)
-{
+void QPathEdit::setDialogButtonIcon(const QIcon &icon) {
 	dialogAction->setIcon(icon);
 	hasCustomIcon = true;
 }
 
-void QPathEdit::resetDialogButtonIcon()
-{
+void QPathEdit::resetDialogButtonIcon() {
 	dialogAction->setIcon(QPathEdit::getDefaultIcon());
 	hasCustomIcon = false;
 }
 
-void QPathEdit::showDialog()
-{
+void QPathEdit::showDialog() {
 	if(dialog->isVisible()) {
 		dialog->raise();
 		dialog->activateWindow();
@@ -325,16 +305,16 @@ void QPathEdit::showDialog()
 	}
 
 	QString oldPath = edit->text();
-	if(oldPath.isEmpty())
+  if(oldPath.isEmpty()) {
 		dialog->setDirectory(defaultDir);
-	else {
-		if(mode == ExistingFolder)
+  } else {
+    if(mode == ExistingFolder) {
 			dialog->setDirectory(oldPath);
-		else {
+    } else {
 			QFileInfo info(oldPath);
-			if(info.isDir())
+      if(info.isDir()) {
 				dialog->setDirectory(oldPath);
-			else {
+      } else {
 				dialog->setDirectory(info.dir());
 				dialog->selectFile(info.fileName());
 			}
@@ -344,9 +324,9 @@ void QPathEdit::showDialog()
 	dialog->open();
 }
 
-void QPathEdit::updateValidInfo(const QString &path)
-{
-	completerModel->index(QFileInfo(path).dir().absolutePath());//enforce "directory loading"
+void QPathEdit::updateValidInfo(const QString &path) {
+  // enforce "directory loading"
+	completerModel->index(QFileInfo(path).dir().absolutePath());
 	if(edit->hasAcceptableInput()) {
 		if(!wasPathValid) {
 			wasPathValid = true;
@@ -362,10 +342,10 @@ void QPathEdit::updateValidInfo(const QString &path)
 	}
 }
 
-void QPathEdit::editTextUpdate()
-{
+void QPathEdit::editTextUpdate() {
 	if(edit->hasAcceptableInput()) {
-		QString newPath = edit->text().replace(QStringLiteral("\\"), QStringLiteral("/"));
+		QString newPath = edit->text()
+                        .replace(QStringLiteral("\\"), QStringLiteral("/"));
 		if(currentValidPath != newPath) {
 			currentValidPath = newPath;
 			emit pathChanged(currentValidPath);
@@ -373,83 +353,81 @@ void QPathEdit::editTextUpdate()
 	}
 }
 
-void QPathEdit::dialogFileSelected(const QString &file)
-{
+void QPathEdit::dialogFileSelected(const QString &file) {
 	if(!file.isEmpty()) {
-		edit->setText(dialog->selectedFiles()
-							.first()
-							.replace(QStringLiteral("\\"), QStringLiteral("/")));
+        QStringList files = dialog->selectedFiles();
+        edit->setText(files.first()
+                           .replace(QStringLiteral("\\"),
+                                    QStringLiteral("/")));
 		editTextUpdate();
 	}
 }
 
-QStringList QPathEdit::modelFilters(const QStringList &normalFilters)
-{
+QStringList QPathEdit::modelFilters(const QStringList &normalFilters) {
 	QStringList res;
-	foreach(QString filter, normalFilters) {
-		QRegularExpressionMatch match = QRegularExpression(QStringLiteral("^.*\\((.*)\\)$"))
-										.match(filter);
-		if(match.hasMatch())
-			res.append(match.captured(1).split(QRegularExpression(QStringLiteral("\\s"))));
+    static QRegularExpression re = QRegularExpression("^.*\\((.*)\\)$");
+    static QRegularExpression re2 = QRegularExpression("\\s");
+    foreach(QString filter, normalFilters) {
+        QRegularExpressionMatch match = re.match(filter);
+        if(match.hasMatch()) {
+            res.append(match.captured(1).split(re2));
+        }
 	}
 	return res;
 }
 
-QIcon QPathEdit::getDefaultIcon()
-{
+QIcon QPathEdit::getDefaultIcon() {
 	switch(uiStyle) {
-	case SeperatedButton: {
-		QImage image(16, 16, QImage::Format_ARGB32);
-		image.fill(Qt::transparent);
-		QPainter painter(&image);
-		painter.setFont(font());
-		painter.setPen(palette().color(QPalette::ButtonText));
-		painter.drawText(QRect(0, 0, 16, 16), Qt::AlignCenter, "…");
-		return QPixmap::fromImage(image);
-	}
-	case JoinedButton:
-		return QIcon(QStringLiteral(":/qpathedit/icons/dialog.ico"));
-	case NoButton:
-		return QIcon();
-	default:
-		Q_UNREACHABLE();
+    case SeperatedButton: {
+      QImage image(16, 16, QImage::Format_ARGB32);
+      image.fill(Qt::transparent);
+      QPainter painter(&image);
+      painter.setFont(font());
+      painter.setPen(palette().color(QPalette::ButtonText));
+      painter.drawText(QRect(0, 0, 16, 16), Qt::AlignCenter, "…");
+      return QPixmap::fromImage(image);
+    }
+    case JoinedButton:
+      return QIcon(QStringLiteral(":/qpathedit/icons/dialog.ico"));
+    case NoButton:
+      return QIcon();
+    default:
+      Q_UNREACHABLE();
 	}
 }
 
-bool QPathEdit::eventFilter(QObject *watched, QEvent *event)
-{
+bool QPathEdit::eventFilter(QObject *watched, QEvent *event) {
 	if (event->type() == QEvent::KeyPress){
 		QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
 		if(keyEvent->key() == Qt::Key_Space &&
 				keyEvent->modifiers() == Qt::ControlModifier){
 			pathCompleter->complete();
 			return true;
-		} else
+        } else {
 			return QObject::eventFilter(watched, event);
-	} else
+        }
+    } else {
 		return QObject::eventFilter(watched, event);
+    }
 }
 
 //HELPER CLASSES IMPLEMENTATION
 
-PathValidator::PathValidator(QObject *parent) :
-	QValidator(parent),
-	mode(QPathEdit::ExistingFile),
-	allowEmpty(true)
-{}
-
-void PathValidator::setMode(QPathEdit::PathMode mode)
-{
-	this->mode = mode;
+PathValidator::PathValidator(QObject *parent)
+  : QValidator(parent)
+  , mode(QPathEdit::ExistingFile)
+  , allowEmpty(true) {
 }
 
-void PathValidator::setAllowEmpty(bool allow)
-{
+void PathValidator::setMode(QPathEdit::PathMode _mode) {
+	mode = _mode;
+}
+
+void PathValidator::setAllowEmpty(bool allow) {
 	allowEmpty = allow;
 }
 
-QValidator::State PathValidator::validate(QString &text, int &) const
-{
+QValidator::State PathValidator::validate(QString &text, int &) const {
 	//check if empty is accepted
 	if(text.isEmpty())
 		return allowEmpty ? QValidator::Acceptable : QValidator::Intermediate;
@@ -460,33 +438,32 @@ QValidator::State PathValidator::validate(QString &text, int &) const
 		return QValidator::Invalid;
 
 	switch(mode) {
-	case QPathEdit::AnyFile://acceptable, as long as it's not an directoy
-		if(pathInfo.isDir())
-			return QValidator::Intermediate;
-		else
-			return QValidator::Acceptable;
-	case QPathEdit::ExistingFile://must be an existing file
-		if(pathInfo.exists() && pathInfo.isFile())
-			return QValidator::Acceptable;
-		else
-			return QValidator::Intermediate;
-	case QPathEdit::ExistingFolder://must be an existing folder
-		if(pathInfo.exists() && pathInfo.isDir())
-			return QValidator::Acceptable;
-		else
-			return QValidator::Intermediate;
-	default:
-		Q_UNREACHABLE();
+    case QPathEdit::AnyFile://acceptable, as long as it's not an directoy
+      if(pathInfo.isDir())
+        return QValidator::Intermediate;
+      else
+        return QValidator::Acceptable;
+    case QPathEdit::ExistingFile://must be an existing file
+      if(pathInfo.exists() && pathInfo.isFile())
+        return QValidator::Acceptable;
+      else
+        return QValidator::Intermediate;
+    case QPathEdit::ExistingFolder://must be an existing folder
+      if(pathInfo.exists() && pathInfo.isDir())
+        return QValidator::Acceptable;
+      else
+        return QValidator::Intermediate;
+    default:
+      Q_UNREACHABLE();
 	}
 
 	return QValidator::Invalid;
 }
 
-void masterDialog(QDialog *dialog)
-{
+void masterDialog(QDialog *dialog) {
 	Qt::WindowFlags flags = Qt::WindowTitleHint |
-							Qt::WindowSystemMenuHint |
-							Qt::WindowCloseButtonHint;
+							            Qt::WindowSystemMenuHint |
+							            Qt::WindowCloseButtonHint;
 
 	dialog->setSizeGripEnabled(true);
 	if(dialog->parentWidget()) {

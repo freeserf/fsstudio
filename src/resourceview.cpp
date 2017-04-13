@@ -35,8 +35,7 @@
 #include "src/animationview.h"
 #include "src/colorlabel.h"
 
-FSSResourceView::FSSResourceView(PDataSource source,
-                                 QWidget *parent)
+FSSResourceView::FSSResourceView(Data::PSource source, QWidget *parent)
   : QWidget(parent) {
   theSource = source;
 
@@ -67,8 +66,10 @@ FSSResourceView::FSSResourceView(PDataSource source,
   resourcesStack->addWidget(viewAnimation);
 
   QToolBar *toolBar = new QToolBar(this);
-  toolBar->addAction(QIcon(":/icons/Actions-document-save-as-icon.png"), "Save", this, &FSSResourceView::on_save);
-  toolBar->addAction(QIcon(":/icons/Actions-edit-paste-icon.png"), "Copy", this, &FSSResourceView::on_copy);
+  toolBar->addAction(QIcon(":/icons/Actions-document-save-as-icon.png"), "Save",
+                     this, &FSSResourceView::on_save);
+  toolBar->addAction(QIcon(":/icons/Actions-edit-paste-icon.png"), "Copy",
+                     this, &FSSResourceView::on_copy);
   field_color = new FSSColorLabel(QColor(0x00, 0x00, 0xFF), this);
   field_color->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
   toolBar->addWidget(field_color);
@@ -83,7 +84,7 @@ FSSResourceView::~FSSResourceView() {
 }
 
 QString
-spriteInfo(PSprite sprite) {
+spriteInfo(Data::PSprite sprite) {
   QString str("Sprite:\n");
   if (NULL != sprite) {
     str += "width = ";
@@ -112,12 +113,12 @@ FSSResourceView::selectResource(Data::Resource resource_class,
     switch (Data::get_resource_type(resource_class)) {
       case Data::TypeSprite: {
         QColor c = field_color->color();
-        Sprite::Color color;
+        Data::Sprite::Color color;
         color.red = c.red();
         color.green = c.green();
         color.blue = c.blue();
         color.alpha = 0xFF;
-        PSprite sprite = theSource->get_sprite(resource_class, index, color);
+        Data::PSprite sprite = theSource->get_sprite(resource_class, index, color);
         viewSprite->setSprite(sprite);
         if (sprite) {
           info = spriteInfo(sprite);
@@ -133,7 +134,7 @@ FSSResourceView::selectResource(Data::Resource resource_class,
       case Data::TypeSound: {
         PBuffer data = theSource->get_sound(index);
         if (data) {
-          viewAudio->setAudioData(data->get_data(), data->get_size(), "wav");
+          viewAudio->setAudioData(data, "wav");
           resView = viewAudio;
         }
         break;
@@ -141,7 +142,7 @@ FSSResourceView::selectResource(Data::Resource resource_class,
       case Data::TypeMusic: {
         PBuffer data = theSource->get_music(index);
         if (data) {
-          viewAudio->setAudioData(data->get_data(), data->get_size(), "mid");
+          viewAudio->setAudioData(data, "mid");
           resView = viewAudio;
         }
         break;

@@ -30,14 +30,14 @@ FSSSourcesView::FSSSourcesView(QWidget *parent)
 }
 
 void
-FSSSourcesView::addSource(PDataSource source) {
+FSSSourcesView::addSource(Data::PSource source) {
   FSSResourceView *resView = new FSSResourceView(source, this);
   resView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   resView->setMinimumWidth(250);
   sourceViews.push_back(resView);
 
-  connect(this, SIGNAL(resourceSelected(Data::Resource, unsigned int)),
-          resView, SLOT(selectResource(Data::Resource, unsigned int)));
+  connect(this, SIGNAL(resourceSelected(Data::Resource,uint)),
+          resView, SLOT(selectResource(Data::Resource,uint)));
 }
 
 void
@@ -47,14 +47,14 @@ FSSSourcesView::onResourceSelected(Data::Resource resource_class,
 }
 
 void
-FSSSourcesView::showSource(PDataSource source, bool show) {
+FSSSourcesView::showSource(Data::PSource source, bool show) {
   FSSResourceView *view;
   foreach (view, sourceViews) {
     if (view->source() == source) {
       if (show) {
-          view->show();
+        view->show();
       } else {
-          view->hide();
+        view->hide();
       }
       return;
     }

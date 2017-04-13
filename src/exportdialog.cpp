@@ -33,9 +33,7 @@
 
 #include "src/qpathedit.h"
 #include "src/exporter.h"
-#include "src/data-source.h"
 #include "src/datamodel.h"
-#include "src/colorlabel.h"
 
 FSSExportDialog::FSSExportDialog(FSSDataModel *_dataModel, QWidget *parent)
   : QDialog(parent)
@@ -61,7 +59,8 @@ FSSExportDialog::FSSExportDialog(FSSDataModel *_dataModel, QWidget *parent)
   field_folder = new QPathEdit(this);
   field_folder->setAllowEmptyPath(false);
   field_folder->setPathMode(QPathEdit::ExistingFolder);
-  field_folder->setPath(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation));
+  field_folder->setPath(QStandardPaths::writableLocation(
+                                            QStandardPaths::DocumentsLocation));
   field_folder->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   layout->addRow("Target folder:", field_folder);
 
@@ -86,7 +85,7 @@ FSSExportDialog::FSSExportDialog(FSSDataModel *_dataModel, QWidget *parent)
   hLayout->addWidget(button_export);
 
   for (size_t i = 0; i < dataModel->dataSourceCount(); i++) {
-    PDataSource data_source = dataModel->getDataSource(i);
+    Data::PSource data_source = dataModel->getDataSource(i);
     add_source(data_source);
   }
 
@@ -99,7 +98,7 @@ FSSExportDialog::~FSSExportDialog() {
 }
 
 void
-FSSExportDialog::add_source(PDataSource data_source) {
+FSSExportDialog::add_source(Data::PSource data_source) {
   if (data_source == nullptr) {
     return;
   }
@@ -118,7 +117,7 @@ FSSExportDialog::do_export() {
   button_cancel->setEnabled(false);
   button_export->setEnabled(false);
   source_num = field_source->currentIndex();
-  PDataSource source = dataModel->getDataSource(source_num);
+  Data::PSource source = dataModel->getDataSource(source_num);
   FSSExporter exporter(source, field_folder->path(), field_scale->value());
   exporter.set_name(field_name->text().toLocal8Bit().data());
   exporter.do_export();

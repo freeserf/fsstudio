@@ -24,15 +24,12 @@
 
 #include <QDialog>
 
-#include <memory>
+#include "src/data.h"
 
 class QFormLayout;
 class QPathEdit;
 
 class FSSDataModel;
-
-class DataSource;
-typedef std::shared_ptr<DataSource> PDataSource;
 
 class FSSSourcesDialog : public QDialog {
   Q_OBJECT
@@ -46,7 +43,7 @@ class FSSSourcesDialog : public QDialog {
   virtual ~FSSSourcesDialog();
 
  protected:
-  void add_source(PDataSource source);
+  void add_source(Data::PSource source);
 };
 
 #endif  // SRC_SOURCESDIALOG_H_

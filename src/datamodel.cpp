@@ -24,19 +24,22 @@
 #include <QSettings>
 #include <QStandardPaths>
 
+#include "src/data.h"
 #include "src/data-source-dos.h"
 #include "src/data-source-amiga.h"
 #include "src/data-source-custom.h"
 
 FSSDataModel::FSSDataModel(QObject *parent)
   : QObject(parent) {
-  QString base_path = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+  QString base_path = QStandardPaths::writableLocation(
+                                                  QStandardPaths::HomeLocation);
   base_path += "/.local/share/freeserf";
 
   QSettings settings;
   settings.sync();
 
-  QString path = settings.value("sources/dos", base_path + "/spae.pa").toString();
+  QString path = settings.value("sources/dos",
+                                base_path + "/spae.pa").toString();
   addDataSource(DataSourceTypeDos, path);
 
   path = settings.value("sources/amiga", base_path).toString();
@@ -47,13 +50,13 @@ FSSDataModel::FSSDataModel(QObject *parent)
 }
 
 FSSDataModel::~FSSDataModel() {
-  for (PDataSource dataSource : data_sources) {
+  for (Data::PSource dataSource : data_sources) {
     saveSetting(dataSource);
   }
 }
 
 size_t
-FSSDataModel::addDataSource(PDataSource source) {
+FSSDataModel::addDataSource(Data::PSource source) {
   size_t index = data_sources.count();
   data_sources.push_back(source);
   saveSetting(source);
@@ -63,7 +66,7 @@ FSSDataModel::addDataSource(PDataSource source) {
 
 size_t
 FSSDataModel::addDataSource(DataSourceType type, const QString &path) {
-  PDataSource source;
+  Data::PSource source;
 
   switch (type) {
     case DataSourceTypeDos:
@@ -85,7 +88,7 @@ FSSDataModel::addDataSource(DataSourceType type, const QString &path) {
   return std::numeric_limits<size_t>::max();
 }
 
-PDataSource
+Data::PSource
 FSSDataModel::getDataSource(size_t index) const {
   if (index >= (size_t)data_sources.count()) {
     return nullptr;
@@ -94,7 +97,7 @@ FSSDataModel::getDataSource(size_t index) const {
 }
 
 void
-FSSDataModel::setDataSource(PDataSource source, size_t index) {
+FSSDataModel::setDataSource(Data::PSource source, size_t index) {
   if (index >= (size_t)data_sources.count()) {
     return;
   }
@@ -104,7 +107,7 @@ FSSDataModel::setDataSource(PDataSource source, size_t index) {
 }
 
 FSSDataModel::DataSourceType
-FSSDataModel::getType(PDataSource source) {
+FSSDataModel::getType(Data::PSource source) {
   std::string name = source->get_name();
 
   if (name == "DOS") {
@@ -117,7 +120,7 @@ FSSDataModel::getType(PDataSource source) {
 }
 
 void
-FSSDataModel::saveSetting(PDataSource source) {
+FSSDataModel::saveSetting(Data::PSource source) {
   QSettings settings;
   switch (getType(source)) {
     case DataSourceTypeDos:

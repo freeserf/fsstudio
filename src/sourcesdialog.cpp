@@ -27,7 +27,6 @@
 #include <QPushButton>
 #include <QLabel>
 
-#include "src/data-source.h"
 #include "src/qpathedit.h"
 #include "src/datamodel.h"
 
@@ -72,7 +71,7 @@ FSSSourcesDialog::~FSSSourcesDialog() {
 }
 
 void
-FSSSourcesDialog::add_source(PDataSource source) {
+FSSSourcesDialog::add_source(Data::PSource source) {
   QHBoxLayout *line_layout = new QHBoxLayout();
   layout->addRow(source->get_name().c_str(), line_layout);
 

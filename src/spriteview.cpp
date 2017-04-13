@@ -77,7 +77,7 @@ FSSSpriteView::~FSSSpriteView() {
 }
 
 void
-FSSSpriteView::setSprite(PSprite _sprite) {
+FSSSpriteView::setSprite(Data::PSprite _sprite) {
   sprite = _sprite;
 
   labelImage->setBackgroundRole(QPalette::LinkVisited);
@@ -107,7 +107,7 @@ FSSSpriteView::getImage() {
   }
 
   QImage image(reinterpret_cast<uchar*>(sprite->get_data()),
-               sprite->get_width(), sprite->get_height(),
+               (int)sprite->get_width(), (int)sprite->get_height(),
                QImage::Format_ARGB32);
 
   return image;
@@ -151,7 +151,8 @@ FSSSpriteView::save() {
     return;
   }
 
-  QString path = QFileDialog::getSaveFileName(this, "Save sprite", QString(), "Image File (*.png)");
+  QString path = QFileDialog::getSaveFileName(this, "Save sprite",
+                                              QString(), "Image File (*.png)");
   if (path.isEmpty()) {
     return;
   }

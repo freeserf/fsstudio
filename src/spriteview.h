@@ -26,7 +26,7 @@
 #include <QLabel>
 #include <QTimer>
 
-#include "src/data-source.h"
+#include "src/data.h"
 
 class FSSClickableLabel : public QLabel {
   Q_OBJECT
@@ -36,7 +36,7 @@ class FSSClickableLabel : public QLabel {
   QTimer click_timer;
 
  public:
-  explicit FSSClickableLabel(QWidget *pParent = NULL);
+  explicit FSSClickableLabel(QWidget *pParent = nullptr);
   virtual ~FSSClickableLabel();
 
  protected:
@@ -54,14 +54,14 @@ class FSSSpriteView : public QScrollArea {
   Q_OBJECT
 
  protected:
-  PSprite sprite;
+  Data::PSprite sprite;
   FSSClickableLabel *labelImage;
 
  public:
-  explicit FSSSpriteView(QWidget *pParent = NULL);
+  explicit FSSSpriteView(QWidget *pParent = nullptr);
   virtual ~FSSSpriteView();
 
-  void setSprite(PSprite sprite);
+  void setSprite(Data::PSprite sprite);
 
  protected:
   QImage getImage();

@@ -24,10 +24,7 @@
 
 #include <QObject>
 
-#include <memory>
-
-class DataSource;
-typedef std::shared_ptr<DataSource> PDataSource;
+#include "src/data.h"
 
 class FSSDataModel : public QObject {
   Q_OBJECT
@@ -40,21 +37,21 @@ class FSSDataModel : public QObject {
   };
 
  protected:
-  QList<PDataSource> data_sources;
+  QList<Data::PSource> data_sources;
 
  public:
   explicit FSSDataModel(QObject *parent = 0);
   virtual ~FSSDataModel();
 
   size_t dataSourceCount() const { return data_sources.count(); }
-  size_t addDataSource(PDataSource source);
+  size_t addDataSource(Data::PSource source);
   size_t addDataSource(DataSourceType type, const QString &path);
-  PDataSource getDataSource(size_t index) const;
-  void setDataSource(PDataSource source, size_t index);
-  static DataSourceType getType(PDataSource source);
+  Data::PSource getDataSource(size_t index) const;
+  void setDataSource(Data::PSource source, size_t index);
+  static DataSourceType getType(Data::PSource source);
 
  protected:
-  void saveSetting(PDataSource source);
+  void saveSetting(Data::PSource source);
 
  signals:
   void sourceChanged(size_t index);

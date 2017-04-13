@@ -56,7 +56,7 @@ FSSResourceModel::headerData(int section,
 
 QModelIndex
 FSSResourceModel::index(int row, int column,
-                       const QModelIndex &parent) const {
+                        const QModelIndex &parent) const {
   if (parent.isValid()) {
     return createIndex(row, column,
                        ((row+1) << 16) |
@@ -68,7 +68,7 @@ FSSResourceModel::index(int row, int column,
 
 QModelIndex
 FSSResourceModel::parent(const QModelIndex &index) const {
-  int sub_row = index.internalId() >> 16;
+  int sub_row = (int)(index.internalId() >> 16);
   if (sub_row == 0) {
     return QModelIndex();
   }

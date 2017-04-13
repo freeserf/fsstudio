@@ -43,7 +43,7 @@ class FSSMainWindow : public QMainWindow {
   QTreeView *treeResources;
   FSSResourceModel *resourceModel;
   FSSSourcesView *viewSources;
-  QMap<QAction*, PDataSource> actions;
+  QMap<QAction*, Data::PSource> actions;
   FSSDataModel *dataModel;
 
  signals:

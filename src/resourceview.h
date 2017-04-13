@@ -26,7 +26,6 @@
 
 #include "src/data.h"
 
-class DataSource;
 class QTextBrowser;
 class FSSSpriteView;
 class FSSAudioView;
@@ -39,7 +38,7 @@ class FSSResourceView : public QWidget {
   Q_OBJECT
 
  protected:
-  PDataSource theSource;
+  Data::PSource theSource;
 
   QLabel *labelName;
   QStackedLayout *resourcesStack;
@@ -52,10 +51,10 @@ class FSSResourceView : public QWidget {
   QWidget *viewEmpty;
 
  public:
-  explicit FSSResourceView(PDataSource source, QWidget *parent = 0);
+  explicit FSSResourceView(Data::PSource source, QWidget *parent = 0);
   virtual ~FSSResourceView();
 
-  PDataSource source() { return theSource; }
+  Data::PSource source() { return theSource; }
 
  public slots:
   void selectResource(Data::Resource resource_class,

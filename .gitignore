@@ -4,3 +4,4 @@ Makefile*
 debug
 release
 .qmake.stash
+.DS_Store

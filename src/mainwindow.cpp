@@ -28,7 +28,6 @@
 #include "src/sourcesview.h"
 
 #include "src/data.h"
-#include "src/data-source.h"
 #include "src/exportdialog.h"
 #include "src/sourcesdialog.h"
 #include "src/datamodel.h"
@@ -54,14 +53,17 @@ FSSMainWindow::FSSMainWindow(FSSDataModel *_dataModel, QWidget *parent)
   QMenu *menuFile = new QMenu("File", this);
   menuFile->addAction("Export", this, SLOT(exportSource()));
   menuBar->addMenu(menuFile);
-  QAction *action_src = menuFile->addAction("Sources", this, SLOT(openSources()));
+  QAction *action_src = menuFile->addAction("Sources", this,
+                                            SLOT(openSources()));
   action_src->setMenuRole(QAction::PreferencesRole);
 
   QMenu *menuView = new QMenu("View", this);
   menuBar->addMenu(menuView);
-  QAction *action = menuView->addAction("Resources", dockResources, SLOT(setVisible(bool)));
+  QAction *action = menuView->addAction("Resources", dockResources,
+                                        SLOT(setVisible(bool)));
   action->setCheckable(true);
-  connect(dockResources, SIGNAL(visibilityChanged(bool)), action, SLOT(setChecked(bool)));
+  connect(dockResources, SIGNAL(visibilityChanged(bool)), action,
+          SLOT(setChecked(bool)));
 
   menuView->addSeparator();
 
@@ -69,21 +71,21 @@ FSSMainWindow::FSSMainWindow(FSSDataModel *_dataModel, QWidget *parent)
   viewSources->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
   for (size_t i = 0; i < dataModel->dataSourceCount(); i++) {
-    PDataSource data_source = dataModel->getDataSource(i);
+    Data::PSource data_source = dataModel->getDataSource(i);
     viewSources->addSource(data_source);
-    QAction *action = menuView->addAction(data_source->get_name().c_str(), this, SLOT(switchSource(bool)));
+    QAction *action = menuView->addAction(data_source->get_name().c_str(),
+                                          this, SLOT(switchSource(bool)));
     action->setCheckable(true);
     action->setChecked(true);
     actions[action] = data_source;
   }
 
   connect(treeResources->selectionModel(),
-          SIGNAL(currentChanged(const QModelIndex&, const QModelIndex&)),
-          SLOT(onCurrentChanged(const QModelIndex&, const QModelIndex&)));
+          SIGNAL(currentChanged(QModelIndex,QModelIndex)),
+          SLOT(onCurrentChanged(QModelIndex,QModelIndex)));
 
-  connect(this, SIGNAL(resourceSelected(Data::Resource, unsigned int)),
-          viewSources, SLOT(onResourceSelected(Data::Resource,
-                                               unsigned int)));
+  connect(this, SIGNAL(resourceSelected(Data::Resource,uint)),
+          viewSources, SLOT(onResourceSelected(Data::Resource,uint)));
 }
 
 FSSMainWindow::~FSSMainWindow() {
@@ -120,6 +122,6 @@ FSSMainWindow::openSources() {
 void
 FSSMainWindow::switchSource(bool checked) {
   QAction *action = (QAction*)sender();
-  PDataSource source = actions[action];
+  Data::PSource source = actions[action];
   viewSources->showSource(source, checked);
 }
