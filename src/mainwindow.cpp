@@ -21,76 +21,60 @@
 
 #include "src/mainwindow.h"
 
-#include <QBitmap>
-#include <QLabel>
-#include <QHBoxLayout>
-#include <QSplitter>
-#include <QStandardPaths>
 #include <QMenuBar>
-#include <QFileDialog>
-#include <QSettings>
+#include <QDockWidget>
 
 #include "src/resourcemodel.h"
 #include "src/sourcesview.h"
 
 #include "src/data.h"
 #include "src/data-source.h"
-#include "src/data-source-dos.h"
-#include "src/data-source-amiga.h"
 #include "src/exportdialog.h"
+#include "src/sourcesdialog.h"
+#include "src/datamodel.h"
 
-DataSource *data_source_dos;
-DataSource *data_source_amiga;
-
-FSSMainWindow::FSSMainWindow(QWidget *parent)
+FSSMainWindow::FSSMainWindow(FSSDataModel *_dataModel, QWidget *parent)
   : QMainWindow(parent)
-  , resourceModel(NULL) {
+  , resourceModel(nullptr)
+  , dataModel(_dataModel) {
   QSplitter *mainSplitter = new QSplitter(Qt::Horizontal, this);
   setCentralWidget(mainSplitter);
 
-  treeResources = new QTreeView(mainSplitter);
-  treeResources->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   resourceModel = new FSSResourceModel();
+
+  QDockWidget *dockResources = new QDockWidget("Resources", this);
+  treeResources = new QTreeView(dockResources);
+  treeResources->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
   treeResources->setModel(resourceModel);
-
-  viewSources = new FSSSourcesView(mainSplitter);
-  viewSources->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-  QString path = QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-  path += "/.local/share/freeserf";
-  QString path_dos = path + "/spae.pa";
+  dockResources->setWidget(treeResources);
+  addDockWidget(Qt::LeftDockWidgetArea, dockResources);
 
   QMenuBar *menuBar = this->menuBar();
 
   QMenu *menuFile = new QMenu("File", this);
   menuFile->addAction("Export", this, SLOT(exportSource()));
   menuBar->addMenu(menuFile);
+  QAction *action_src = menuFile->addAction("Sources", this, SLOT(openSources()));
+  action_src->setMenuRole(QAction::PreferencesRole);
 
   QMenu *menuView = new QMenu("View", this);
   menuBar->addMenu(menuView);
+  QAction *action = menuView->addAction("Resources", dockResources, SLOT(setVisible(bool)));
+  action->setCheckable(true);
+  connect(dockResources, SIGNAL(visibilityChanged(bool)), action, SLOT(setChecked(bool)));
 
-  data_source_dos = new DataSourceDOS();
-  if (!data_source_dos->load(path_dos.toLocal8Bit().data())) {
-    delete data_source_dos;
-    data_source_dos = nullptr;
-  } else {
-    viewSources->addSource(data_source_dos);
-    QAction *action = menuView->addAction("DOS", this, SLOT(switchSource(bool)));
+  menuView->addSeparator();
+
+  viewSources = new FSSSourcesView(mainSplitter);
+  viewSources->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
+  for (size_t i = 0; i < dataModel->dataSourceCount(); i++) {
+    PDataSource data_source = dataModel->getDataSource(i);
+    viewSources->addSource(data_source);
+    QAction *action = menuView->addAction(data_source->get_name().c_str(), this, SLOT(switchSource(bool)));
     action->setCheckable(true);
     action->setChecked(true);
-    actions[action] = data_source_dos;
-  }
-
-  data_source_amiga = new DataSourceAmiga();
-  if (!data_source_amiga->load(path.toLocal8Bit().data())) {
-    delete data_source_amiga;
-    data_source_amiga = nullptr;
-  } else {
-    viewSources->addSource(data_source_amiga);
-    QAction *action = menuView->addAction("Amiga", this, SLOT(switchSource(bool)));
-    action->setCheckable(true);
-    action->setChecked(true);
-    actions[action] = data_source_amiga;
+    actions[action] = data_source;
   }
 
   connect(treeResources->selectionModel(),
@@ -112,8 +96,8 @@ FSSMainWindow::onCurrentChanged(const QModelIndex &current,
   unsigned int index = 0;
 
   if (current.parent().isValid()) {
-      resource_class = (Data::Resource)(current.parent().row() + 1);
-      index = current.row();
+    resource_class = (Data::Resource)(current.parent().row() + 1);
+    index = current.row();
   }
 
   emit resourceSelected(resource_class, index);
@@ -121,15 +105,21 @@ FSSMainWindow::onCurrentChanged(const QModelIndex &current,
 
 void
 FSSMainWindow::exportSource() {
-  FSSExportDialog dialog;
-  dialog.add_source(data_source_dos);
-  dialog.add_source(data_source_amiga);
+  FSSExportDialog dialog(dataModel, this);
+  dialog.setWindowModality(Qt::WindowModal);
+  dialog.exec();
+}
+
+void
+FSSMainWindow::openSources() {
+  FSSSourcesDialog dialog(dataModel, this);
+  dialog.setWindowModality(Qt::ApplicationModal);
   dialog.exec();
 }
 
 void
 FSSMainWindow::switchSource(bool checked) {
   QAction *action = (QAction*)sender();
-  DataSource *source = actions[action];
+  PDataSource source = actions[action];
   viewSources->showSource(source, checked);
 }

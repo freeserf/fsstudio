@@ -26,10 +26,11 @@
 
 #include "src/data-source.h"
 
-FSSExporter::FSSExporter(DataSource *_source, QString _path, unsigned int _scale) {
+FSSExporter::FSSExporter(PDataSource _source, QString _path, unsigned int _scale) {
   source = _source;
   path = _path;
   scale = _scale;
+  name = "Unnamed";
 }
 
 FSSExporter::~FSSExporter() {
@@ -45,32 +46,33 @@ FSSExporter::do_export() {
   QSettings meta_file(path + "/meta.ini", QSettings::IniFormat);
 
   meta_file.setValue("scale", QString::number(scale));
+  meta_file.setValue("name", name.c_str());
 
   for (size_t r = Data::AssetArtLandscape; r <= Data::AssetCursor; r++) {
     Data::Resource res = (Data::Resource)r;
     switch (Data::get_resource_type(res)) {
       case Data::TypeSprite: {
         exportResourceSprite(res);
-        meta_file.setValue(QString("resources/") + Data::get_resource_name(res), Data::get_resource_name(res));
         break;
       }
       case Data::TypeAnimation: {
+        exportResourceAnimation(res);
         break;
       }
       case Data::TypeSound: {
         exportResourceData(res, "wav");
-        meta_file.setValue(QString("resources/") + Data::get_resource_name(res), Data::get_resource_name(res));
         break;
       }
       case Data::TypeMusic: {
         exportResourceData(res, "mid");
-        meta_file.setValue(QString("resources/") + Data::get_resource_name(res), Data::get_resource_name(res));
         break;
       }
       default: {
         break;
       }
     }
+    meta_file.setValue(QString("resources/") + Data::get_resource_name(res).c_str(),
+                       Data::get_resource_name(res).c_str());
   }
 
   return true;
@@ -78,53 +80,100 @@ FSSExporter::do_export() {
 
 void
 FSSExporter::exportResourceData(Data::Resource res, QString ext) {
-  QString res_name = Data::get_resource_name(res);
+  QString res_name = Data::get_resource_name(res).c_str();
   dir.mkdir(res_name);
+  QString path = dir.path() + "/" + res_name;
+  QSettings meta_file(path + "/meta.ini", QSettings::IniFormat);
   for (size_t i = 0; i < Data::get_resource_count(res); i++) {
-    QString file_name;
-    file_name.sprintf("%03zu.", i);
-    file_name += ext;
-    size_t size = 0;
-    void *data = source->get_sound(i, &size);
+    PBuffer data;
+    if (res == Data::AssetSound) {
+      data = source->get_sound(i);
+      ext = "wav";
+    } else if (res == Data::AssetMusic) {
+      data = source->get_music(i);
+      ext = "mid";
+    }
     if (data != nullptr) {
-      QString file_path = res_name + "/" + file_name;
+      QString file_name;
+      file_name.sprintf("%03zu", i);
+      QString file_path = res_name + "/" + file_name + "." + ext;
       QFile file(dir.path() + "/" + file_path);
       if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        file.write((const char*)data, size);
+        file.write((char*)data->get_data(), data->get_size());
         file.close();
       }
+      meta_file.setValue(file_name + "/path", file_name + "." + ext);
     }
   }
 }
 
 void
 FSSExporter::exportResourceSprite(Data::Resource res) {
-  QString res_name = Data::get_resource_name(res);
+  QString res_name = Data::get_resource_name(res).c_str();
   dir.mkdir(res_name);
   QString path = dir.path() + "/" + res_name;
   QSettings meta_file(path + "/meta.ini", QSettings::IniFormat);
 
-  Sprite::Color c;
-  c.red = color.red();
-  c.green = color.green();
-  c.blue = color.blue();
-  c.alpha = color.alpha();
-
   for (size_t i = 0; i < Data::get_resource_count(res); i++) {
     QString file_name;
     file_name.sprintf("%03zu", i);
-    Sprite *sprite = source->get_sprite(res, i, c);
-    if ((sprite != nullptr) && (sprite->get_data() != nullptr)) {
-      QImage image(reinterpret_cast<uchar*>(sprite->get_data()), sprite->get_width(), sprite->get_height(), QImage::Format_ARGB32);
+    DataSource::MaskImage pair = source->get_sprite_parts(res, i);
+    bool meta_saved = false;
+    if (std::get<0>(pair)) {
+      PSprite mask = std::get<0>(pair);
+      QImage image(reinterpret_cast<uchar*>(mask->get_data()), mask->get_width(), mask->get_height(), QImage::Format_ARGB32);
+      if (scale != 1.) {
+        image = image.scaled(image.width() * scale, image.height() * scale);
+      }
+      image.save(path + "/" + file_name + "m.png", "png");
+      meta_file.setValue(file_name + "/mask_path", file_name + "m.png");
+      meta_file.setValue(file_name + "/delta_x", (int)(mask->get_delta_x() * scale));
+      meta_file.setValue(file_name + "/delta_y", (int)(mask->get_delta_y() * scale));
+      meta_file.setValue(file_name + "/offset_x", (int)(mask->get_offset_x() * scale));
+      meta_file.setValue(file_name + "/offset_y", (int)(mask->get_offset_y() * scale));
+      meta_saved = true;
+    }
+
+    if (std::get<1>(pair)) {
+      PSprite front = std::get<1>(pair);
+      QImage image(reinterpret_cast<uchar*>(front->get_data()), front->get_width(), front->get_height(), QImage::Format_ARGB32);
       if (scale != 1.) {
         image = image.scaled(image.width() * scale, image.height() * scale);
       }
       image.save(path + "/" + file_name + ".png", "png");
-      meta_file.setValue(file_name + "/path", file_name + ".png");
-      meta_file.setValue(file_name + "/delta_x", (int)(sprite->get_delta_x() * scale));
-      meta_file.setValue(file_name + "/delta_y", (int)(sprite->get_delta_y() * scale));
-      meta_file.setValue(file_name + "/offset_x", (int)(sprite->get_offset_x() * scale));
-      meta_file.setValue(file_name + "/offset_y", (int)(sprite->get_offset_y() * scale));
+      meta_file.setValue(file_name + "/image_path", file_name + ".png");
+      if (!meta_saved) {
+        meta_file.setValue(file_name + "/delta_x", (int)(front->get_delta_x() * scale));
+        meta_file.setValue(file_name + "/delta_y", (int)(front->get_delta_y() * scale));
+        meta_file.setValue(file_name + "/offset_x", (int)(front->get_offset_x() * scale));
+        meta_file.setValue(file_name + "/offset_y", (int)(front->get_offset_y() * scale));
+      }
+    }
+  }
+}
+
+void
+FSSExporter::exportResourceAnimation(Data::Resource res) {
+  QString res_name = Data::get_resource_name(res).c_str();
+  dir.mkdir(res_name);
+  QString path = dir.path() + "/" + res_name;
+  QSettings meta_file(path + "/meta.ini", QSettings::IniFormat);
+
+  for (size_t i = 0; i < Data::get_resource_count(res); i++) {
+    QString file_name;
+    file_name.sprintf("%03zu", i);
+    meta_file.setValue(file_name + "/path", file_name + ".ini");
+    QSettings data_file(path + "/" + file_name + ".ini", QSettings::IniFormat);
+
+    size_t count = source->get_animation_phase_count(i);
+    data_file.setValue("count", (unsigned int)count);
+    for (size_t j = 0; j < count; j++) {
+      Animation animation = source->get_animation(i, j);
+      QString phase_name;
+      phase_name.sprintf("%03zu", j);
+      data_file.setValue(phase_name + "/sprite", animation.sprite);
+      data_file.setValue(phase_name + "/x", animation.x * (int)scale);
+      data_file.setValue(phase_name + "/y", animation.y * (int)scale);
     }
   }
 }

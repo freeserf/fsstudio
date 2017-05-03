@@ -1,7 +1,7 @@
 /*
- * sourcesview.h - FSSSourcesView declaration
+ * sourcesdialog.h - FSSSourcesDialog declaration
  *
- * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
+ * Copyright (C) 2017  Wicked_Digger <wicked_digger@mail.ru>
  *
  * This file is part of FSStudio.
  *
@@ -19,32 +19,34 @@
  * along with FSStudio.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_SOURCESVIEW_H_
-#define SRC_SOURCESVIEW_H_
+#ifndef SRC_SOURCESDIALOG_H_
+#define SRC_SOURCESDIALOG_H_
 
-#include <QSplitter>
-#include <QList>
+#include <QDialog>
 
-#include "src/data.h"
+#include <memory>
 
-class FSSResourceView;
+class QFormLayout;
+class QPathEdit;
 
-class FSSSourcesView : public QSplitter {
+class FSSDataModel;
+
+class DataSource;
+typedef std::shared_ptr<DataSource> PDataSource;
+
+class FSSSourcesDialog : public QDialog {
   Q_OBJECT
 
  protected:
-  QList<FSSResourceView*> sourceViews;
+  QFormLayout *layout;
+  FSSDataModel *dataModel;
 
  public:
-  explicit FSSSourcesView(QWidget *parent = 0);
+  explicit FSSSourcesDialog(FSSDataModel *dataModel, QWidget *parent = 0);
+  virtual ~FSSSourcesDialog();
 
- signals:
-  void resourceSelected(Data::Resource resource_class, unsigned int index);
-
- public slots:
-  void addSource(PDataSource source);
-  void onResourceSelected(Data::Resource resource_class, unsigned int index);
-  void showSource(PDataSource source, bool show);
+ protected:
+  void add_source(PDataSource source);
 };
 
-#endif  // SRC_SOURCESVIEW_H_
+#endif  // SRC_SOURCESDIALOG_H_

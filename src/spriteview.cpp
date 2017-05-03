@@ -74,19 +74,10 @@ FSSSpriteView::FSSSpriteView(QWidget *pParent) : QScrollArea(pParent) {
 }
 
 FSSSpriteView::~FSSSpriteView() {
-  if (sprite != NULL) {
-    delete sprite;
-    sprite = NULL;
-  }
 }
 
 void
-FSSSpriteView::setSprite(Sprite *_sprite) {
-  if (sprite != NULL) {
-    delete sprite;
-    sprite = NULL;
-  }
-
+FSSSpriteView::setSprite(PSprite _sprite) {
   sprite = _sprite;
 
   labelImage->setBackgroundRole(QPalette::LinkVisited);
@@ -124,7 +115,7 @@ FSSSpriteView::getImage() {
 
 QPixmap
 FSSSpriteView::getPixmap() {
-  if (sprite == NULL) {
+  if (!sprite) {
     return QPixmap();
   }
 

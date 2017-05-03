@@ -1,7 +1,7 @@
 /*
- * main.cpp - main implementation
+ * sprite-file-qt.cpp - Sprite loaded from file implementation
  *
- * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
+ * Copyright (C) 2017  Wicked_Digger <wicked_digger@mail.ru>
  *
  * This file is part of FSStudio.
  *
@@ -19,22 +19,24 @@
  * along with FSStudio.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QApplication>
+#include "src/sprite-file.h"
 
-#include "src/mainwindow.h"
-#include "src/datamodel.h"
+#include <QImage>
 
-int main(int argc, char *argv[]) {
-  QApplication app(argc, argv);
-  QCoreApplication::setOrganizationName("freeserf");
-  QCoreApplication::setOrganizationDomain("freeserf.org");
-  QCoreApplication::setApplicationName("fsstudio");
-  app.setApplicationDisplayName("FreeSerf Studio");
+SpriteFile::SpriteFile() {
+}
 
-  FSSDataModel dataModel;
-
-  FSSMainWindow w(&dataModel);
-  w.show();
-
-  return app.exec();
+bool
+SpriteFile::load(const std::string &path) {
+  QImage image;
+  if (!image.load(path.c_str())) {
+    return false;
+  }
+  image = image.convertToFormat(QImage::Format_ARGB32);
+  width = image.width();
+  height = image.height();
+  size_t size = width * height * 4;
+  data = new uint8_t[size];
+  memcpy(data, image.bits(), size);
+  return true;
 }

@@ -32,15 +32,19 @@ class FSSSpriteView;
 class FSSAudioView;
 class FSSAnimationView;
 class QStackedLayout;
+class QLabel;
+class FSSColorLabel;
 
 class FSSResourceView : public QWidget {
   Q_OBJECT
 
  protected:
-  DataSource *theSource;
+  PDataSource theSource;
 
+  QLabel *labelName;
   QStackedLayout *resourcesStack;
   QTextBrowser *textBrowser;
+  FSSColorLabel *field_color;
 
   FSSSpriteView *viewSprite;
   FSSAudioView *viewAudio;
@@ -48,14 +52,14 @@ class FSSResourceView : public QWidget {
   QWidget *viewEmpty;
 
  public:
-  explicit FSSResourceView(DataSource *source, QWidget *parent = 0);
+  explicit FSSResourceView(PDataSource source, QWidget *parent = 0);
   virtual ~FSSResourceView();
 
-  DataSource *source() { return theSource; }
+  PDataSource source() { return theSource; }
 
  public slots:
-  void onResourceSelected(Data::Resource resource_class,
-                          unsigned int index);
+  void selectResource(Data::Resource resource_class,
+                      unsigned int index);
   void on_save();
   void on_copy();
 };

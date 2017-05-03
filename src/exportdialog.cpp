@@ -29,25 +29,34 @@
 #include <QPushButton>
 #include <QComboBox>
 #include <QSpinBox>
-#include <QColorDialog>
+#include <QLineEdit>
 
 #include "src/qpathedit.h"
 #include "src/exporter.h"
 #include "src/data-source.h"
+#include "src/datamodel.h"
+#include "src/colorlabel.h"
 
-FSSExportDialog::FSSExportDialog(QWidget *parent) : QDialog(parent) {
+FSSExportDialog::FSSExportDialog(FSSDataModel *_dataModel, QWidget *parent)
+  : QDialog(parent)
+  , dataModel(_dataModel) {
   source_num = -1;
 
   QVBoxLayout *vLayout = new QVBoxLayout(this);
   this->setLayout(vLayout);
 
-  QFormLayout *layout = new QFormLayout(this);
+  QFormLayout *layout = new QFormLayout();
   layout->setFieldGrowthPolicy(QFormLayout::ExpandingFieldsGrow);
   vLayout->addLayout(layout);
 
   field_source = new QComboBox(this);
   field_source->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
   layout->addRow("Asset source:", field_source);
+
+  field_name = new QLineEdit(this);
+  field_name->setText("Unnamed");
+  field_name->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+  layout->addRow("Name:", field_name);
 
   field_folder = new QPathEdit(this);
   field_folder->setAllowEmptyPath(false);
@@ -63,10 +72,7 @@ FSSExportDialog::FSSExportDialog(QWidget *parent) : QDialog(parent) {
   field_scale->setMinimum(1);
   layout->addRow("Scale:", field_scale);
 
-  field_color = new FSSColorLabel(QColor(0xff, 0x00, 0x00), this);
-  field_color->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-  layout->addRow("Color:", field_color);
-  QHBoxLayout *hLayout = new QHBoxLayout(this);
+  QHBoxLayout *hLayout = new QHBoxLayout();
   vLayout->addLayout(hLayout);
 
   button_export = new QPushButton("Export", this);
@@ -78,21 +84,29 @@ FSSExportDialog::FSSExportDialog(QWidget *parent) : QDialog(parent) {
   hLayout->addStretch();
   hLayout->addWidget(button_cancel);
   hLayout->addWidget(button_export);
+
+  for (size_t i = 0; i < dataModel->dataSourceCount(); i++) {
+    PDataSource data_source = dataModel->getDataSource(i);
+    add_source(data_source);
+  }
+
+  setMinimumWidth(500);
+  setMinimumHeight(sizeHint().height());
+  setMaximumHeight(sizeHint().height());
 }
 
 FSSExportDialog::~FSSExportDialog() {
 }
 
 void
-FSSExportDialog::add_source(DataSource *data_source) {
+FSSExportDialog::add_source(PDataSource data_source) {
   if (data_source == nullptr) {
     return;
   }
 
-  sources.push_back(data_source);
-  field_source->addItem(data_source->get_name());
+  field_source->addItem(data_source->get_name().c_str());
 
-  if (sources.count() == 1) {
+  if (field_source->count() == 1) {
     source_num = 0;
     button_export->setEnabled(true);
     field_source->setCurrentIndex(source_num);
@@ -103,42 +117,10 @@ void
 FSSExportDialog::do_export() {
   button_cancel->setEnabled(false);
   button_export->setEnabled(false);
-  DataSource *source = sources[source_num];
+  source_num = field_source->currentIndex();
+  PDataSource source = dataModel->getDataSource(source_num);
   FSSExporter exporter(source, field_folder->path(), field_scale->value());
-  exporter.set_color(field_color->color());
+  exporter.set_name(field_name->text().toLocal8Bit().data());
   exporter.do_export();
   close();
-}
-
-// FSSColorLabel
-FSSColorLabel::FSSColorLabel(const QColor& _color, QWidget* parent)
-  : QLabel("       ", parent) {
-  setColor(_color);
-}
-
-FSSColorLabel::~FSSColorLabel() {
-}
-
-void
-FSSColorLabel::setColor(const QColor _color) {
-  cur_color = _color;
-  QPalette pal = palette();
-  pal.setColor(backgroundRole(), cur_color);
-  setPalette(pal);
-  setAutoFillBackground(true);
-  update();
-}
-
-QColor
-FSSColorLabel::color() const {
-  return cur_color;
-}
-
-void
-FSSColorLabel::mousePressEvent(QMouseEvent*) {
-  QColorDialog dialog(this);
-  dialog.setCurrentColor(cur_color);
-  if (dialog.exec() == QDialog::Accepted) {
-    setColor(dialog.currentColor());
-  }
 }

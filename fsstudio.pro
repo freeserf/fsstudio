@@ -44,7 +44,18 @@ SOURCES += src/main.cpp\
     src/animationview.cpp \
     src/exporter.cpp \
     src/exportdialog.cpp \
-    src/qpathedit.cpp
+    src/qpathedit.cpp \
+    src/sourcesdialog.cpp \
+    freeserf/src/data-source-custom.cc \
+    freeserf/src/configfile.cc \
+    src/datamodel.cpp \
+    src/sprite-file-qt.cpp \
+    src/colorlabel.cpp \
+    freeserf/src/data-source-legacy.cc \
+    freeserf/src/buffer.cc \
+    freeserf/src/mod2wav-dummy.cc \
+    freeserf/src/pcm2wav.cc \
+    freeserf/src/debug.cc
 
 HEADERS  += src/mainwindow.h \
     freeserf/src/data-source-amiga.h \
@@ -64,7 +75,18 @@ HEADERS  += src/mainwindow.h \
     src/animationview.h \
     src/exporter.h \
     src/exportdialog.h \
-    src/qpathedit.h
+    src/qpathedit.h \
+    src/sourcesdialog.h \
+    freeserf/src/data-source-custom.h \
+    freeserf/src/configfile.h \
+    src/datamodel.h \
+    freeserf/src/sprite-file.h \
+    src/colorlabel.h \
+    freeserf/src/data-source-legacy.h \
+    freeserf/src/buffer.h \
+    freeserf/src/mod2wav.h \
+    freeserf/src/pcm2wav.h \
+    freeserf/src/debug.h
 
 INCLUDEPATH += .
 INCLUDEPATH += freeserf
