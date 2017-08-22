@@ -30,19 +30,21 @@
 
 class FSSResourceModel;
 class FSSSourcesView;
+class FSSDataModel;
 
 class FSSMainWindow : public QMainWindow {
   Q_OBJECT
 
  public:
-  explicit FSSMainWindow(QWidget *parent = 0);
+  explicit FSSMainWindow(FSSDataModel *dataModel, QWidget *parent = 0);
   virtual ~FSSMainWindow();
 
  private:
   QTreeView *treeResources;
   FSSResourceModel *resourceModel;
   FSSSourcesView *viewSources;
-  QMap<QAction*, DataSource*> actions;
+  QMap<QAction*, PDataSource> actions;
+  FSSDataModel *dataModel;
 
  signals:
   void resourceSelected(Data::Resource resource_class,
@@ -52,6 +54,7 @@ class FSSMainWindow : public QMainWindow {
   void onCurrentChanged(const QModelIndex &current,
                         const QModelIndex &previous);
   void exportSource();
+  void openSources();
   void switchSource(bool);
 };
 

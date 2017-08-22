@@ -1,7 +1,7 @@
 /*
- * sourcesview.h - FSSSourcesView declaration
+ * colorlabel.h - FSSColorLabel declaration
  *
- * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
+ * Copyright (C) 2017  Wicked_Digger <wicked_digger@mail.ru>
  *
  * This file is part of FSStudio.
  *
@@ -19,32 +19,29 @@
  * along with FSStudio.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_SOURCESVIEW_H_
-#define SRC_SOURCESVIEW_H_
+#ifndef SRC_COLORLABEL_H_
+#define SRC_COLORLABEL_H_
 
-#include <QSplitter>
-#include <QList>
+#include <QLabel>
 
-#include "src/data.h"
-
-class FSSResourceView;
-
-class FSSSourcesView : public QSplitter {
+class FSSColorLabel : public QLabel {
   Q_OBJECT
 
  protected:
-  QList<FSSResourceView*> sourceViews;
+  QColor cur_color;
 
  public:
-  explicit FSSSourcesView(QWidget *parent = 0);
+  explicit FSSColorLabel(const QColor& color, QWidget* parent=0);
+  virtual ~FSSColorLabel();
+
+  void setColor(const QColor color);
+  QColor color() const;
 
  signals:
-  void resourceSelected(Data::Resource resource_class, unsigned int index);
+  void clicked();
 
- public slots:
-  void addSource(PDataSource source);
-  void onResourceSelected(Data::Resource resource_class, unsigned int index);
-  void showSource(PDataSource source, bool show);
+ protected:
+  void mousePressEvent(QMouseEvent* event);
 };
 
-#endif  // SRC_SOURCESVIEW_H_
+#endif  // SRC_COLORLABEL_H_

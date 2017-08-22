@@ -100,8 +100,8 @@ FSSResourceModel::columnCount(const QModelIndex & /*parent*/) const {
 QString
 FSSResourceModel::getResName(int res) const {
   Data::Resource rclass = (Data::Resource)res;
-  const char *name = Data::get_resource_name(rclass);
-  return QString::fromLatin1(name);
+  std::string name = Data::get_resource_name(rclass);
+  return QString::fromLatin1(name.c_str());
 }
 
 QString

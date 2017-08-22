@@ -34,22 +34,23 @@ class FSSExporter : public QObject {
   Q_OBJECT
 
  protected:
-  DataSource *source;
+  std::shared_ptr<DataSource> source;
   QString path;
   unsigned int scale;
   QDir dir;
-  QColor color;
+  std::string name;
 
  public:
-  FSSExporter(DataSource *source, QString path, unsigned int scale = 1);
+  FSSExporter(PDataSource source, QString path, unsigned int scale = 1);
   virtual ~FSSExporter();
 
-  void set_color(const QColor &_color) { color = _color; }
+  void set_name(const std::string &_name) { name = _name; }
   bool do_export();
 
  protected:
   void exportResourceData(Data::Resource res, QString ext);
   void exportResourceSprite(Data::Resource res);
+  void exportResourceAnimation(Data::Resource res);
 };
 
 #endif  // SRC_EXPORTER_H_

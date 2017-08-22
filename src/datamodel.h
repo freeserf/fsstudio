@@ -1,5 +1,5 @@
 /*
- * exportdialog.h - FSSExportDialog declaration
+ * datamodel.h - FSSDataModel declaration
  *
  * Copyright (C) 2017  Wicked_Digger <wicked_digger@mail.ru>
  *
@@ -19,48 +19,45 @@
  * along with FSStudio.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_EXPORTDIALOG_H_
-#define SRC_EXPORTDIALOG_H_
+#ifndef SRC_DATAMODEL_H_
+#define SRC_DATAMODEL_H_
 
-#include <QDialog>
-#include <QLabel>
+#include <QObject>
 
 #include <memory>
-
-class QComboBox;
-class QPathEdit;
-class QSpinBox;
-class QPushButton;
-class QLineEdit;
-
-class FSSColorLabel;
-class FSSDataModel;
 
 class DataSource;
 typedef std::shared_ptr<DataSource> PDataSource;
 
-class FSSExportDialog : public QDialog {
+class FSSDataModel : public QObject {
   Q_OBJECT
 
+ public:
+  enum DataSourceType {
+    DataSourceTypeDos,
+    DataSourceTypeAmiga,
+    DataSourceTypeCustom
+  };
+
  protected:
-  QComboBox *field_source;
-  QLineEdit *field_name;
-  QPathEdit *field_folder;
-  QSpinBox *field_scale;
-  QPushButton *button_cancel;
-  QPushButton *button_export;
-  int source_num;
-  FSSDataModel *dataModel;
+  QList<PDataSource> data_sources;
 
  public:
-  explicit FSSExportDialog(FSSDataModel *dataModel, QWidget *parent = 0);
-  virtual ~FSSExportDialog();
+  explicit FSSDataModel(QObject *parent = 0);
+  virtual ~FSSDataModel();
+
+  size_t dataSourceCount() const { return data_sources.count(); }
+  size_t addDataSource(PDataSource source);
+  size_t addDataSource(DataSourceType type, const QString &path);
+  PDataSource getDataSource(size_t index) const;
+  void setDataSource(PDataSource source, size_t index);
+  static DataSourceType getType(PDataSource source);
 
  protected:
-  void add_source(PDataSource data_source);
+  void saveSetting(PDataSource source);
 
- public slots:
-  void do_export();
+ signals:
+  void sourceChanged(size_t index);
 };
 
-#endif  // SRC_EXPORTDIALOG_H_
+#endif  // SRC_DATAMODEL_H_

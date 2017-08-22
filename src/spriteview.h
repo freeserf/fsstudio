@@ -54,14 +54,14 @@ class FSSSpriteView : public QScrollArea {
   Q_OBJECT
 
  protected:
-  Sprite *sprite;
+  PSprite sprite;
   FSSClickableLabel *labelImage;
 
  public:
   explicit FSSSpriteView(QWidget *pParent = NULL);
   virtual ~FSSSpriteView();
 
-  void setSprite(Sprite *sprite);
+  void setSprite(PSprite sprite);
 
  protected:
   QImage getImage();

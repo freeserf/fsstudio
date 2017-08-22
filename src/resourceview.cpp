@@ -32,8 +32,9 @@
 #include "src/spriteview.h"
 #include "src/audioview.h"
 #include "src/animationview.h"
+#include "src/colorlabel.h"
 
-FSSResourceView::FSSResourceView(DataSource *source,
+FSSResourceView::FSSResourceView(PDataSource source,
                                  QWidget *parent)
   : QWidget(parent) {
   theSource = source;
@@ -41,7 +42,11 @@ FSSResourceView::FSSResourceView(DataSource *source,
   QVBoxLayout *layout = new QVBoxLayout(this);
   setLayout(layout);
 
-  resourcesStack = new QStackedLayout(this);
+  labelName = new QLabel(this);
+  labelName->setText(source->get_name().c_str());
+  layout->addWidget(labelName);
+
+  resourcesStack = new QStackedLayout();
   layout->addLayout(resourcesStack);
 
   viewEmpty = new QWidget(this);
@@ -61,8 +66,11 @@ FSSResourceView::FSSResourceView(DataSource *source,
   resourcesStack->addWidget(viewAnimation);
 
   QToolBar *toolBar = new QToolBar(this);
-  toolBar->addAction(QIcon(":/icons/disk-icon.png"), "Save", this, &FSSResourceView::on_save);
-  toolBar->addAction(QIcon(":/icons/clipboard-icon.png"), "Copy", this, &FSSResourceView::on_copy);
+  toolBar->addAction(QIcon(":/icons/Actions-document-save-as-icon.png"), "Save", this, &FSSResourceView::on_save);
+  toolBar->addAction(QIcon(":/icons/Actions-edit-paste-icon.png"), "Copy", this, &FSSResourceView::on_copy);
+  field_color = new FSSColorLabel(QColor(0x00, 0x00, 0xFF), this);
+  field_color->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+  toolBar->addWidget(field_color);
   layout->addWidget(toolBar);
 
   textBrowser = new QTextBrowser(this);
@@ -74,7 +82,7 @@ FSSResourceView::~FSSResourceView() {
 }
 
 QString
-spriteInfo(Sprite *sprite) {
+spriteInfo(PSprite sprite) {
   QString str("Sprite:\n");
   if (NULL != sprite) {
     str += "width = ";
@@ -94,17 +102,23 @@ spriteInfo(Sprite *sprite) {
 }
 
 void
-FSSResourceView::onResourceSelected(Data::Resource resource_class,
-                                    unsigned int index) {
-  QWidget *resView = NULL;
+FSSResourceView::selectResource(Data::Resource resource_class,
+                                unsigned int index) {
+  QWidget *resView = viewEmpty;
   QString info;
 
   if (resource_class != Data::AssetNone) {
     switch (Data::get_resource_type(resource_class)) {
       case Data::TypeSprite: {
-        Sprite *sprite = theSource->get_sprite(resource_class, index, {0,0,0,0});
+        QColor c = field_color->color();
+        Sprite::Color color;
+        color.red = c.red();
+        color.green = c.green();
+        color.blue = c.blue();
+        color.alpha = 0xFF;
+        PSprite sprite = theSource->get_sprite(resource_class, index, color);
         viewSprite->setSprite(sprite);
-        if (sprite != NULL) {
+        if (sprite) {
           info = spriteInfo(sprite);
         }
         resView = viewSprite;
@@ -115,25 +129,21 @@ FSSResourceView::onResourceSelected(Data::Resource resource_class,
 //        viewAnimation->setAnimation(&animation);
 //        info.sprintf("size = %lu", animation.get_size());
 //        resView = viewAnimation;
-        resView = viewEmpty;
         break;
       }
       case Data::TypeSound: {
-        size_t size = 0;
-        void *data = theSource->get_sound(index, &size);
-        viewAudio->setAudioData(data, size, "wav");
+        PBuffer data = theSource->get_sound(index);
+        viewAudio->setAudioData(data->get_data(), data->get_size(), "wav");
         resView = viewAudio;
         break;
       }
       case Data::TypeMusic: {
-        size_t size = 0;
-        void *data = theSource->get_music(index, &size);
-        viewAudio->setAudioData(data, size, "mid");
+        PBuffer data = theSource->get_music(index);
+        viewAudio->setAudioData(data->get_data(), data->get_size(), "mid");
         resView = viewAudio;
         break;
       }
       case Data::TypeUnknown: {
-        resView = viewEmpty;
         break;
       }
     }
