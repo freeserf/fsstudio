@@ -26,6 +26,9 @@
 SpriteFile::SpriteFile() {
 }
 
+SpriteFile::~SpriteFile() {
+}
+
 bool
 SpriteFile::load(const std::string &path) {
   QImage image;

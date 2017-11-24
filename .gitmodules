@@ -1,4 +1,3 @@
 [submodule "freeserf"]
 	path = freeserf
-	url = git://github.com/wdigger/freeserf.git
-	branch = new_data
+	url = git://github.com/freeserf/freeserf
