@@ -25,6 +25,7 @@
 #include <QImage>
 
 #include "src/data-source.h"
+#include "src/buffer.h"
 
 FSSExporter::FSSExporter(PDataSource _source, QString _path, unsigned int _scale) {
   source = _source;
@@ -49,7 +50,7 @@ FSSExporter::do_export() {
   meta_file.setValue("name", name.c_str());
 
   for (size_t r = Data::AssetArtLandscape; r <= Data::AssetCursor; r++) {
-    Data::Resource res = (Data::Resource)r;
+    Data::Resource res = static_cast<Data::Resource>(r);
     switch (Data::get_resource_type(res)) {
       case Data::TypeSprite: {
         exportResourceSprite(res);
@@ -99,7 +100,8 @@ FSSExporter::exportResourceData(Data::Resource res, QString ext) {
       QString file_path = res_name + "/" + file_name + "." + ext;
       QFile file(dir.path() + "/" + file_path);
       if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        file.write((char*)data->get_data(), data->get_size());
+        file.write(static_cast<char*>(data->get_data()),
+                   static_cast<qint64>(data->get_size()));
         file.close();
       }
       meta_file.setValue(file_name + "/path", file_name + "." + ext);
@@ -121,8 +123,11 @@ FSSExporter::exportResourceSprite(Data::Resource res) {
     bool meta_saved = false;
     if (std::get<0>(pair)) {
       PSprite mask = std::get<0>(pair);
-      QImage image(reinterpret_cast<uchar*>(mask->get_data()), mask->get_width(), mask->get_height(), QImage::Format_ARGB32);
-      if (scale != 1.) {
+      QImage image(reinterpret_cast<uchar*>(mask->get_data()),
+                   mask->get_width(),
+                   mask->get_height(),
+                   QImage::Format_ARGB32);
+      if (scale != 1) {
         image = image.scaled(image.width() * scale, image.height() * scale);
       }
       image.save(path + "/" + file_name + "m.png", "png");
