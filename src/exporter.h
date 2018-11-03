@@ -36,7 +36,7 @@ class FSSExporter : public QObject {
  protected:
   std::shared_ptr<DataSource> source;
   QString path;
-  unsigned int scale;
+  int scale;
   QDir dir;
   std::string name;
 

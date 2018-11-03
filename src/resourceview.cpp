@@ -28,6 +28,7 @@
 #include <QLabel>
 #include <QToolBar>
 
+#include "src/buffer.h"
 #include "src/data-source.h"
 #include "src/spriteview.h"
 #include "src/audioview.h"
@@ -133,14 +134,18 @@ FSSResourceView::selectResource(Data::Resource resource_class,
       }
       case Data::TypeSound: {
         PBuffer data = theSource->get_sound(index);
-        viewAudio->setAudioData(data->get_data(), data->get_size(), "wav");
-        resView = viewAudio;
+        if (data) {
+          viewAudio->setAudioData(data->get_data(), data->get_size(), "wav");
+          resView = viewAudio;
+        }
         break;
       }
       case Data::TypeMusic: {
         PBuffer data = theSource->get_music(index);
-        viewAudio->setAudioData(data->get_data(), data->get_size(), "mid");
-        resView = viewAudio;
+        if (data) {
+          viewAudio->setAudioData(data->get_data(), data->get_size(), "mid");
+          resView = viewAudio;
+        }
         break;
       }
       case Data::TypeUnknown: {
