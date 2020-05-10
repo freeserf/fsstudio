@@ -40,4 +40,7 @@ after_build:
       md $ZIP_BASE\platforms
       Copy-Item -Path $env:QTDIR\plugins\platforms\qwindows$QT_SUFFIX -Destination $ZIP_BASE\platforms
       7z a $ZIP_FILE $ZIP_BASE\*
-      Push-AppveyorArtifact $ZIP_FILE
+
+artifacts:
+  - path: "fsstudio-VC-$(PLATFORM)-$(CONFIGURATION).zip"
+    name: archive
