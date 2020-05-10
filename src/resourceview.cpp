@@ -126,10 +126,8 @@ FSSResourceView::selectResource(Data::Resource resource_class,
         break;
       }
       case Data::TypeAnimation: {
-//        Animation animation = source->get_animation(index);
-//        viewAnimation->setAnimation(&animation);
-//        info.sprintf("size = %lu", animation.get_size());
-//        resView = viewAnimation;
+        viewAnimation->setAnimation(theSource, index);
+        resView = viewAnimation;
         break;
       }
       case Data::TypeSound: {

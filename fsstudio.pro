@@ -53,7 +53,6 @@ SOURCES += src/main.cpp\
     src/colorlabel.cpp \
     freeserf/src/data-source-legacy.cc \
     freeserf/src/buffer.cc \
-    freeserf/src/mod2wav-dummy.cc \
     freeserf/src/pcm2wav.cc \
     freeserf/src/debug.cc
 
@@ -84,7 +83,6 @@ HEADERS  += src/mainwindow.h \
     src/colorlabel.h \
     freeserf/src/data-source-legacy.h \
     freeserf/src/buffer.h \
-    freeserf/src/mod2wav.h \
     freeserf/src/pcm2wav.h \
     freeserf/src/debug.h
 
