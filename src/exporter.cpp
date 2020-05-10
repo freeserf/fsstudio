@@ -95,8 +95,7 @@ FSSExporter::exportResourceData(Data::Resource res, QString ext) {
       ext = "mid";
     }
     if (data != nullptr) {
-      QString file_name;
-      file_name.sprintf("%03zu", i);
+      QString file_name = QString("%1").arg(i, 3, 10, QChar('0'));
       QString file_path = res_name + "/" + file_name + "." + ext;
       QFile file(dir.path() + "/" + file_path);
       if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
@@ -117,8 +116,7 @@ FSSExporter::exportResourceSprite(Data::Resource res) {
   QSettings meta_file(path + "/meta.ini", QSettings::IniFormat);
 
   for (size_t i = 0; i < Data::get_resource_count(res); i++) {
-    QString file_name;
-    file_name.sprintf("%03zu", i);
+    QString file_name = QString("%1").arg(i, 3, 10, QChar('0'));
     DataSource::MaskImage pair = source->get_sprite_parts(res, i);
     bool meta_saved = false;
     if (std::get<0>(pair)) {
@@ -165,17 +163,15 @@ FSSExporter::exportResourceAnimation(Data::Resource res) {
   QSettings meta_file(path + "/meta.ini", QSettings::IniFormat);
 
   for (size_t i = 0; i < Data::get_resource_count(res); i++) {
-    QString file_name;
-    file_name.sprintf("%03zu", i);
+    QString file_name = QString("%1").arg(i, 3, 10, QChar('0'));
     meta_file.setValue(file_name + "/path", file_name + ".ini");
     QSettings data_file(path + "/" + file_name + ".ini", QSettings::IniFormat);
 
     size_t count = source->get_animation_phase_count(i);
     data_file.setValue("count", (unsigned int)count);
     for (size_t j = 0; j < count; j++) {
-      Animation animation = source->get_animation(i, j);
-      QString phase_name;
-      phase_name.sprintf("%03zu", j);
+      Animation animation = source->get_animation(i, j << 3);
+      QString phase_name = QString("%1").arg(j, 3, 10, QChar('0'));
       data_file.setValue(phase_name + "/sprite", animation.sprite);
       data_file.setValue(phase_name + "/x", animation.x * (int)scale);
       data_file.setValue(phase_name + "/y", animation.y * (int)scale);

@@ -22,28 +22,28 @@
 #include "src/animationview.h"
 
 FSSAnimationView::FSSAnimationView(QWidget *pParent) : QLabel(pParent) {
-  animation = NULL;
+  index = 0;
 }
 
 FSSAnimationView::~FSSAnimationView() {
 }
 
 void
-FSSAnimationView::setAnimation(const Animation *_animation) {
-  animation = _animation;
+FSSAnimationView::setAnimation(PDataSource data_source, size_t index) {
+  this->data_source = data_source;
+  this->index = index;
 
-  if (animation == NULL) {
+  if (!data_source) {
     return;
   }
 
   QString text;
-/*
-  for (size_t i = 0; i < animation->get_size(); i++) {
-    const animation_stage_t *stage = animation->get_stage(i);
-    QString t;
-    t.sprintf("%lu\ttime = %d\tx = %d\ty = %d\n", i, stage->sprite, stage->x, stage->y);
-    text += t;
+
+  for (size_t i = 0; i < data_source->get_animation_phase_count(index); i++) {
+    Animation stage = data_source->get_animation(index, i << 3);
+    QString line = QString("%1\tsprite = %2\tx = %3\ty = %4\n").arg(i).arg(stage.sprite).arg(stage.x).arg(stage.y);
+    text += line;
   }
-*/
+
   setText(text);
 }

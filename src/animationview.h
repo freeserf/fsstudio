@@ -30,13 +30,14 @@ class FSSAnimationView : public QLabel {
   Q_OBJECT
 
  protected:
-  const Animation *animation;
+  PDataSource data_source;
+  size_t index;
 
  public:
   explicit FSSAnimationView(QWidget *pParent = NULL);
   virtual ~FSSAnimationView();
 
-  void setAnimation(const Animation *animation);
+  void setAnimation(PDataSource data_source, size_t index);
 };
 
 #endif  // SRC_ANIMATIONVIEW_H_
