@@ -27,7 +27,8 @@
 #include "src/data-source.h"
 #include "src/buffer.h"
 
-FSSExporter::FSSExporter(PDataSource _source, QString _path, unsigned int _scale) {
+FSSExporter::FSSExporter(Data::PSource _source, QString _path,
+                         unsigned int _scale) {
   source = _source;
   path = _path;
   scale = _scale;
@@ -72,7 +73,8 @@ FSSExporter::do_export() {
         break;
       }
     }
-    meta_file.setValue(QString("resources/") + Data::get_resource_name(res).c_str(),
+    meta_file.setValue(QString("resources/")
+                       + Data::get_resource_name(res).c_str(),
                        Data::get_resource_name(res).c_str());
   }
 
@@ -95,7 +97,8 @@ FSSExporter::exportResourceData(Data::Resource res, QString ext) {
       ext = "mid";
     }
     if (data != nullptr) {
-      QString file_name = QString("%1").arg(i, 3, 10, QChar('0'));
+      QString file_name;
+      file_name.asprintf("%03zu", i);
       QString file_path = res_name + "/" + file_name + "." + ext;
       QFile file(dir.path() + "/" + file_path);
       if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
@@ -116,40 +119,51 @@ FSSExporter::exportResourceSprite(Data::Resource res) {
   QSettings meta_file(path + "/meta.ini", QSettings::IniFormat);
 
   for (size_t i = 0; i < Data::get_resource_count(res); i++) {
-    QString file_name = QString("%1").arg(i, 3, 10, QChar('0'));
-    DataSource::MaskImage pair = source->get_sprite_parts(res, i);
+    QString file_name;
+    file_name.asprintf("%03zu", i);
+    Data::MaskImage pair = source->get_sprite_parts(res, i);
     bool meta_saved = false;
     if (std::get<0>(pair)) {
-      PSprite mask = std::get<0>(pair);
+      Data::PSprite mask = std::get<0>(pair);
       QImage image(reinterpret_cast<uchar*>(mask->get_data()),
-                   mask->get_width(),
-                   mask->get_height(),
+                   (int)mask->get_width(),
+                   (int)mask->get_height(),
                    QImage::Format_ARGB32);
       if (scale != 1) {
         image = image.scaled(image.width() * scale, image.height() * scale);
       }
       image.save(path + "/" + file_name + "m.png", "png");
       meta_file.setValue(file_name + "/mask_path", file_name + "m.png");
-      meta_file.setValue(file_name + "/delta_x", (int)(mask->get_delta_x() * scale));
-      meta_file.setValue(file_name + "/delta_y", (int)(mask->get_delta_y() * scale));
-      meta_file.setValue(file_name + "/offset_x", (int)(mask->get_offset_x() * scale));
-      meta_file.setValue(file_name + "/offset_y", (int)(mask->get_offset_y() * scale));
+      meta_file.setValue(file_name + "/delta_x",
+                         (int)(mask->get_delta_x() * scale));
+      meta_file.setValue(file_name + "/delta_y",
+                         (int)(mask->get_delta_y() * scale));
+      meta_file.setValue(file_name + "/offset_x",
+                         (int)(mask->get_offset_x() * scale));
+      meta_file.setValue(file_name + "/offset_y",
+                         (int)(mask->get_offset_y() * scale));
       meta_saved = true;
     }
 
     if (std::get<1>(pair)) {
-      PSprite front = std::get<1>(pair);
-      QImage image(reinterpret_cast<uchar*>(front->get_data()), front->get_width(), front->get_height(), QImage::Format_ARGB32);
+      Data::PSprite front = std::get<1>(pair);
+      QImage image(reinterpret_cast<uchar*>(front->get_data()),
+                   (int)front->get_width(), (int)front->get_height(),
+                   QImage::Format_ARGB32);
       if (scale != 1.) {
         image = image.scaled(image.width() * scale, image.height() * scale);
       }
       image.save(path + "/" + file_name + ".png", "png");
       meta_file.setValue(file_name + "/image_path", file_name + ".png");
       if (!meta_saved) {
-        meta_file.setValue(file_name + "/delta_x", (int)(front->get_delta_x() * scale));
-        meta_file.setValue(file_name + "/delta_y", (int)(front->get_delta_y() * scale));
-        meta_file.setValue(file_name + "/offset_x", (int)(front->get_offset_x() * scale));
-        meta_file.setValue(file_name + "/offset_y", (int)(front->get_offset_y() * scale));
+        meta_file.setValue(file_name + "/delta_x",
+                           (int)(front->get_delta_x() * scale));
+        meta_file.setValue(file_name + "/delta_y",
+                           (int)(front->get_delta_y() * scale));
+        meta_file.setValue(file_name + "/offset_x",
+                           (int)(front->get_offset_x() * scale));
+        meta_file.setValue(file_name + "/offset_y",
+                           (int)(front->get_offset_y() * scale));
       }
     }
   }
@@ -163,15 +177,17 @@ FSSExporter::exportResourceAnimation(Data::Resource res) {
   QSettings meta_file(path + "/meta.ini", QSettings::IniFormat);
 
   for (size_t i = 0; i < Data::get_resource_count(res); i++) {
-    QString file_name = QString("%1").arg(i, 3, 10, QChar('0'));
+    QString file_name;
+    file_name.asprintf("%03zu", i);
     meta_file.setValue(file_name + "/path", file_name + ".ini");
     QSettings data_file(path + "/" + file_name + ".ini", QSettings::IniFormat);
 
     size_t count = source->get_animation_phase_count(i);
     data_file.setValue("count", (unsigned int)count);
     for (size_t j = 0; j < count; j++) {
-      Animation animation = source->get_animation(i, j << 3);
-      QString phase_name = QString("%1").arg(j, 3, 10, QChar('0'));
+      Data::Animation animation = source->get_animation(i, j);
+      QString phase_name;
+      phase_name.asprintf("%03zu", j);
       data_file.setValue(phase_name + "/sprite", animation.sprite);
       data_file.setValue(phase_name + "/x", animation.x * (int)scale);
       data_file.setValue(phase_name + "/y", animation.y * (int)scale);

@@ -24,20 +24,21 @@
 
 #include <QLabel>
 
-#include "src/data-source.h"
+#include "src/data.h"
 
 class FSSAnimationView : public QLabel {
   Q_OBJECT
 
  protected:
-  PDataSource data_source;
+  Data::PSource data_source;
   size_t index;
+  void *animation;
 
  public:
   explicit FSSAnimationView(QWidget *pParent = NULL);
   virtual ~FSSAnimationView();
 
-  void setAnimation(PDataSource data_source, size_t index);
+  void setAnimation(Data::PSource data_source, size_t index);
 };
 
 #endif  // SRC_ANIMATIONVIEW_H_

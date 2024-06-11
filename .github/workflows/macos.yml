@@ -1,0 +1,45 @@
+name: macos
+
+on:
+  pull_request:
+  push:
+  release:
+    types: published
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    strategy:
+      matrix:
+        buildtype: [Debug, Release]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Install dependencies
+        run: |
+          brew install qt6
+
+      - name: Configure FSStudio
+        run: |
+          cmake -B build -G "Unix Makefiles"
+
+      - name: Build FSStudio
+        run: |
+          cd build
+          make
+
+      - name: Pack FSStudio
+        run: |
+          cd build
+          make package
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FSStudio-${{ matrix.buildtype }}
+          path: ./build/FSStudio.dmg

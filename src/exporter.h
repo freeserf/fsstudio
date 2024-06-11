@@ -28,20 +28,18 @@
 
 #include "src/data.h"
 
-class DataSource;
-
 class FSSExporter : public QObject {
   Q_OBJECT
 
  protected:
-  std::shared_ptr<DataSource> source;
+  Data::PSource source;
   QString path;
   int scale;
   QDir dir;
   std::string name;
 
  public:
-  FSSExporter(PDataSource source, QString path, unsigned int scale = 1);
+  FSSExporter(Data::PSource source, QString path, unsigned int scale = 1);
   virtual ~FSSExporter();
 
   void set_name(const std::string &_name) { name = _name; }

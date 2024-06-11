@@ -20,27 +20,28 @@
  */
 
 #include "src/animationview.h"
+#include "freeserf/src/data.h"
 
 FSSAnimationView::FSSAnimationView(QWidget *pParent) : QLabel(pParent) {
-  index = 0;
+  animation = nullptr;
 }
 
 FSSAnimationView::~FSSAnimationView() {
 }
 
 void
-FSSAnimationView::setAnimation(PDataSource data_source, size_t index) {
+FSSAnimationView::setAnimation(Data::PSource data_source, size_t index) {
   this->data_source = data_source;
   this->index = index;
 
-  if (!data_source) {
+  if (animation == nullptr) {
     return;
   }
 
   QString text;
 
   for (size_t i = 0; i < data_source->get_animation_phase_count(index); i++) {
-    Animation stage = data_source->get_animation(index, i << 3);
+    Data::Animation stage = data_source->get_animation(index, i << 3);
     QString line = QString("%1\tsprite = %2\tx = %3\ty = %4\n").arg(i).arg(stage.sprite).arg(stage.x).arg(stage.y);
     text += line;
   }

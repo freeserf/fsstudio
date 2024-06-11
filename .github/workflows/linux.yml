@@ -1,0 +1,48 @@
+name: linux
+
+on:
+  pull_request:
+  push:
+  release:
+    types: published
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    strategy:
+      matrix:
+        buildtype: [Debug, Release]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libglx-dev libgl1-mesa-dev
+          sudo apt-get install -y qt6-base-dev
+          sudo apt-get install -y libqt6opengl6-dev
+
+      - name: Configure FSStudio
+        run: |
+          cmake -B build -G "Unix Makefiles"
+
+      - name: Build FSStudio
+        run: |
+          cd build
+          make
+
+      - name: Pack FSStudio
+        run: |
+          cd build
+          make package
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FSStudio-${{ matrix.buildtype }}
+          path: ./build/FSStudio-0.1.0-Linux.tar.*

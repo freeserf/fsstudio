@@ -25,7 +25,7 @@
 #include <QDialog>
 #include <QLabel>
 
-#include <memory>
+#include "src/data.h"
 
 class QComboBox;
 class QPathEdit;
@@ -35,9 +35,6 @@ class QLineEdit;
 
 class FSSColorLabel;
 class FSSDataModel;
-
-class DataSource;
-typedef std::shared_ptr<DataSource> PDataSource;
 
 class FSSExportDialog : public QDialog {
   Q_OBJECT
@@ -57,7 +54,7 @@ class FSSExportDialog : public QDialog {
   virtual ~FSSExportDialog();
 
  protected:
-  void add_source(PDataSource data_source);
+  void add_source(Data::PSource data_source);
 
  public slots:
   void do_export();
