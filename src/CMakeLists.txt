@@ -18,7 +18,22 @@ set(FSSTUDIO_HEADERS application.h
                      resourceview.h
                      spriteimage.h)
 
-add_executable(${PROJECT_NAME} WIN32 MACOSX_BUNDLE ${FSSTUDIO_SOURCES} ${FSSTUDIO_HEADERS})
+# Desktop application: a bundle with an icon on macOS, a windowed program
+# (no console) with an icon, version information and a manifest on Windows.
+set(FSSTUDIO_RES_DIR ${PROJECT_SOURCE_DIR}/res)
+set(FSSTUDIO_COPYRIGHT "Copyright (C) 2016-2026 Wicked_Digger")
+if(APPLE)
+    set(FSSTUDIO_PLATFORM_SOURCES ${FSSTUDIO_RES_DIR}/fsstudio.icns)
+    set_source_files_properties(${FSSTUDIO_RES_DIR}/fsstudio.icns PROPERTIES
+                                MACOSX_PACKAGE_LOCATION Resources)
+elseif(WIN32)
+    configure_file(${FSSTUDIO_RES_DIR}/fsstudio.rc.in ${CMAKE_CURRENT_BINARY_DIR}/fsstudio.rc @ONLY)
+    set(FSSTUDIO_PLATFORM_SOURCES ${CMAKE_CURRENT_BINARY_DIR}/fsstudio.rc
+                                  ${FSSTUDIO_RES_DIR}/fsstudio.manifest)
+endif()
+
+add_executable(${PROJECT_NAME} WIN32 MACOSX_BUNDLE ${FSSTUDIO_SOURCES} ${FSSTUDIO_HEADERS}
+               ${FSSTUDIO_PLATFORM_SOURCES})
 target_link_libraries(${PROJECT_NAME} PRIVATE freeserf_data imgui SDL3::SDL3)
 if(SDL3_mixer_FOUND)
     target_compile_definitions(${PROJECT_NAME} PRIVATE FSSTUDIO_HAVE_MIXER)
@@ -29,6 +44,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER "org.freeserf.fsstudio"
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION}
+    MACOSX_BUNDLE_ICON_FILE fsstudio.icns
+    MACOSX_BUNDLE_COPYRIGHT ${FSSTUDIO_COPYRIGHT}
+    MACOSX_BUNDLE_INFO_PLIST ${FSSTUDIO_RES_DIR}/Info.plist.in
     XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY ""
 )
 
