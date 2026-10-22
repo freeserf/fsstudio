@@ -7,6 +7,7 @@ set(FSSTUDIO_SOURCES application.cpp
                      filedialog.cpp
                      main.cpp
                      resourceview.cpp
+                     serfbody.cpp
                      sprite-file-sdl3.cpp
                      spriteimage.cpp)
 
@@ -16,6 +17,7 @@ set(FSSTUDIO_HEADERS application.h
                      exporter.h
                      filedialog.h
                      resourceview.h
+                     serfbody.h
                      spriteimage.h)
 
 # Desktop application: a bundle with an icon on macOS, a windowed program

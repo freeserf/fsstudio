@@ -23,6 +23,8 @@
 
 #include <SDL3/SDL.h>
 
+#include <algorithm>
+#include <cmath>
 #include <cstring>
 
 #include "imgui.h"
@@ -30,6 +32,7 @@
 #include "src/buffer.h"
 #include "src/data-source.h"
 #include "src/filedialog.h"
+#include "src/serfbody.h"
 #include "src/spriteimage.h"
 
 namespace {
@@ -67,7 +70,13 @@ FSSResourceView::FSSResourceView(SDL_Renderer *_renderer)
   , resource(Data::AssetNone)
   , index(0)
   , texture(nullptr)
-  , texture_color() {
+  , texture_color()
+  , anim_color()
+  , anim_serf_type(0)
+  , anim_playing(false)
+  , anim_position(0.)
+  , anim_start_position(0.)
+  , anim_start_ticks(0) {
 }
 
 FSSResourceView::~FSSResourceView() {
@@ -125,7 +134,47 @@ FSSResourceView::clear() {
   data = nullptr;
   player.clear();
   animation.clear();
+  clear_anim_textures();
+  anim_playing = false;
+  anim_position = 0.;
   status.clear();
+}
+
+void
+FSSResourceView::clear_anim_textures() {
+  for (auto &it : anim_textures) {
+    if (it.second.texture != nullptr) {
+      SDL_DestroyTexture(it.second.texture);
+    }
+  }
+  anim_textures.clear();
+}
+
+const FSSResourceView::SpriteTexture *
+FSSResourceView::anim_sprite(Data::Resource res, int sprite_index,
+                             bool colored) {
+  if (sprite_index < 0) {
+    return nullptr;
+  }
+  uint64_t key = (static_cast<uint64_t>(res) << 32) |
+                 static_cast<uint32_t>(sprite_index);
+  auto it = anim_textures.find(key);
+  if (it == anim_textures.end()) {
+    SpriteTexture st = { nullptr, nullptr };
+    st.sprite = source->get_sprite(res, static_cast<size_t>(sprite_index),
+                                   colored ? anim_color
+                                           : Data::Sprite::Color{0, 0, 0, 0});
+    SDL_Surface *surface = FSSSpriteImage::create_surface(st.sprite);
+    if (surface != nullptr) {
+      st.texture = SDL_CreateTextureFromSurface(renderer, surface);
+      SDL_DestroySurface(surface);
+      if (st.texture != nullptr) {
+        SDL_SetTextureScaleMode(st.texture, SDL_SCALEMODE_NEAREST);
+      }
+    }
+    it = anim_textures.emplace(key, st).first;
+  }
+  return (it->second.texture != nullptr) ? &it->second : nullptr;
 }
 
 void
@@ -224,7 +273,7 @@ FSSResourceView::draw(Options *options) {
       draw_sprite(options);
       break;
     case Data::TypeAnimation:
-      draw_animation();
+      draw_animation(options);
       break;
     case Data::TypeSound:
       draw_sound();
@@ -257,18 +306,7 @@ FSSResourceView::draw_sprite(Options *options) {
   }
   ImGui::SetItemTooltip("Copy the image to the clipboard (or double-click it)");
   ImGui::SameLine();
-  ImGui::SetNextItemWidth(ImGui::GetFontSize() * 6.f);
-  ImGui::SliderInt("Zoom", &options->zoom, 1, 8, "x%d");
-
-  float color[3] = { options->sprite_color.red / 255.f,
-                     options->sprite_color.green / 255.f,
-                     options->sprite_color.blue / 255.f };
-  if (ImGui::ColorEdit3("Player color", color,
-                        ImGuiColorEditFlags_NoInputs)) {
-    options->sprite_color.red = static_cast<unsigned char>(color[0] * 255.f);
-    options->sprite_color.green = static_cast<unsigned char>(color[1] * 255.f);
-    options->sprite_color.blue = static_cast<unsigned char>(color[2] * 255.f);
-  }
+  draw_zoom_and_color(options);
 
   if (ImGui::BeginTable("info", 2, ImGuiTableFlags_SizingFixedFit)) {
     info_row("width", static_cast<int>(sprite->get_width()));
@@ -357,11 +395,167 @@ FSSResourceView::draw_music() {
 }
 
 void
-FSSResourceView::draw_animation() {
+FSSResourceView::draw_zoom_and_color(Options *options) {
+  ImGui::SetNextItemWidth(ImGui::GetFontSize() * 6.f);
+  ImGui::SliderInt("Zoom", &options->zoom, 1, 8, "x%d");
+
+  float color[3] = { options->sprite_color.red / 255.f,
+                     options->sprite_color.green / 255.f,
+                     options->sprite_color.blue / 255.f };
+  if (ImGui::ColorEdit3("Player color", color,
+                        ImGuiColorEditFlags_NoInputs)) {
+    options->sprite_color.red = static_cast<unsigned char>(color[0] * 255.f);
+    options->sprite_color.green = static_cast<unsigned char>(color[1] * 255.f);
+    options->sprite_color.blue = static_cast<unsigned char>(color[2] * 255.f);
+  }
+}
+
+namespace {
+
+// A phase lasts 8 game ticks, 80 ms at the default game speed. The counter of
+// a serf goes down, so the phases are shown from the last to the first.
+const double anim_phase_duration = 0.08;
+
+}  // namespace
+
+void
+FSSResourceView::draw_animation(Options *options) {
   if (animation.empty()) {
     ImGui::TextDisabled("Not present in the data");
     return;
   }
+
+  // playback
+  size_t count = animation.size();
+  double duration = static_cast<double>(count) * anim_phase_duration;
+  if (anim_playing) {
+    double elapsed = static_cast<double>(SDL_GetTicksNS() - anim_start_ticks)
+                     / 1e9;
+    anim_position = std::fmod(anim_start_position + elapsed, duration);
+  }
+  if (ImGui::Button(anim_playing ? "Stop" : "Play",
+                    ImVec2(ImGui::GetFontSize() * 4.f, 0))) {
+    anim_playing = !anim_playing;
+    if (anim_playing) {
+      anim_start_position = anim_position;
+      anim_start_ticks = SDL_GetTicksNS();
+    }
+  }
+  ImGui::SameLine();
+  size_t step = std::min(count - 1, static_cast<size_t>(anim_position /
+                                                        anim_phase_duration));
+  size_t phase = count - 1 - step;
+  float position = static_cast<float>(anim_position);
+  char label[32];
+  snprintf(label, sizeof(label), "phase %zu, %%.2f s", phase);
+  ImGui::SetNextItemWidth(-ImGui::GetFontSize() * 6.f);
+  if (ImGui::SliderFloat("##position", &position, 0.f,
+                         static_cast<float>(duration - 1e-3), label)) {
+    anim_position = position;
+    anim_start_position = anim_position;
+    anim_start_ticks = SDL_GetTicksNS();
+  }
+
+  // serf type, zoom and player color
+  ImGui::SetNextItemWidth(ImGui::GetFontSize() * 9.f);
+  if (ImGui::BeginCombo("Serf", FSSSerfBody::type(anim_serf_type).name)) {
+    for (size_t i = 0; i < FSSSerfBody::type_count(); i++) {
+      if (ImGui::Selectable(FSSSerfBody::type(i).name, i == anim_serf_type)) {
+        anim_serf_type = i;
+      }
+    }
+    ImGui::EndCombo();
+  }
+  ImGui::SetItemTooltip("The animations are the same for all serfs, the serf "
+                        "type selects the sprites");
+  ImGui::SameLine();
+  draw_zoom_and_color(options);
+  if (!same_color(options->sprite_color, anim_color)) {
+    clear_anim_textures();
+    anim_color = options->sprite_color;
+  }
+
+  // the layers of a phase as the game draws a serf: shadow, torso, head
+  struct Layer {
+    const SpriteTexture *st;
+    int x;
+    int y;
+  };
+  auto layers = [this](size_t ph, std::vector<Layer> *out) {
+    out->clear();
+    const Data::Animation &a = animation[ph];
+    const SpriteTexture *shadow = anim_sprite(Data::AssetSerfShadow, 0, false);
+    if (shadow != nullptr) {
+      out->push_back({shadow, a.x + shadow->sprite->get_offset_x(),
+                      a.y + shadow->sprite->get_offset_y()});
+    }
+    int torso_index = 0;
+    int head_index = -1;
+    if (!FSSSerfBody::sprites(a.sprite, anim_serf_type, &torso_index,
+                              &head_index)) {
+      return;
+    }
+    const SpriteTexture *torso = anim_sprite(Data::AssetSerfTorso,
+                                             torso_index, true);
+    if (torso == nullptr) {
+      return;
+    }
+    out->push_back({torso, a.x + torso->sprite->get_offset_x(),
+                    a.y + torso->sprite->get_offset_y()});
+    const SpriteTexture *head = anim_sprite(Data::AssetSerfHead, head_index,
+                                            false);
+    if (head != nullptr) {
+      out->push_back({head, a.x + torso->sprite->get_delta_x() +
+                            head->sprite->get_offset_x(),
+                      a.y + torso->sprite->get_delta_y() +
+                            head->sprite->get_offset_y()});
+    }
+  };
+
+  // the bounds of all phases, so the serf does not jump around
+  std::vector<Layer> list;
+  int min_x = 0, min_y = 0, max_x = 1, max_y = 1;
+  bool first = true;
+  for (size_t i = 0; i < count; i++) {
+    layers(i, &list);
+    for (const Layer &l : list) {
+      int w = static_cast<int>(l.st->sprite->get_width());
+      int h = static_cast<int>(l.st->sprite->get_height());
+      if (first) {
+        min_x = l.x; min_y = l.y; max_x = l.x + w; max_y = l.y + h;
+        first = false;
+      }
+      min_x = std::min(min_x, l.x);
+      min_y = std::min(min_y, l.y);
+      max_x = std::max(max_x, l.x + w);
+      max_y = std::max(max_y, l.y + h);
+    }
+  }
+
+  float zoom = static_cast<float>(options->zoom);
+  float pad = ImGui::GetFontSize();
+  ImVec2 canvas((max_x - min_x) * zoom + pad * 2.f,
+                (max_y - min_y) * zoom + pad * 2.f);
+  ImGui::BeginChild("animation", ImVec2(0, std::min(canvas.y,
+                                        ImGui::GetContentRegionAvail().y * .7f)),
+                    ImGuiChildFlags_Borders,
+                    ImGuiWindowFlags_HorizontalScrollbar);
+  ImVec2 origin = ImGui::GetCursorScreenPos();
+  layers(phase, &list);
+  ImDrawList *draw_list = ImGui::GetWindowDrawList();
+  for (const Layer &l : list) {
+    ImVec2 p0(origin.x + pad + (l.x - min_x) * zoom,
+              origin.y + pad + (l.y - min_y) * zoom);
+    ImVec2 p1(p0.x + l.st->sprite->get_width() * zoom,
+              p0.y + l.st->sprite->get_height() * zoom);
+    draw_list->AddImage(ImTextureRef(reinterpret_cast<ImTextureID>(
+                          l.st->texture)), p0, p1);
+  }
+  if (list.empty()) {
+    ImGui::TextDisabled("No sprites for this serf type");
+  }
+  ImGui::Dummy(canvas);
+  ImGui::EndChild();
 
   ImGuiTableFlags flags = ImGuiTableFlags_RowBg | ImGuiTableFlags_Borders |
                           ImGuiTableFlags_ScrollY |
@@ -373,10 +567,21 @@ FSSResourceView::draw_animation() {
     ImGui::TableSetupColumn("X");
     ImGui::TableSetupColumn("Y");
     ImGui::TableHeadersRow();
-    for (size_t i = 0; i < animation.size(); i++) {
+    for (size_t i = 0; i < count; i++) {
       ImGui::TableNextRow();
+      if (i == phase) {
+        ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg1,
+                               ImGui::GetColorU32(ImGuiCol_Header));
+      }
       ImGui::TableNextColumn();
-      ImGui::Text("%zu", i);
+      // a click on a phase shows it
+      char row[16];
+      snprintf(row, sizeof(row), "%zu", i);
+      if (ImGui::Selectable(row, false, ImGuiSelectableFlags_SpanAllColumns)) {
+        anim_playing = false;
+        anim_position = (static_cast<double>(count - 1 - i) + .5) *
+                        anim_phase_duration;
+      }
       ImGui::TableNextColumn();
       ImGui::Text("%d", animation[i].sprite);
       ImGui::TableNextColumn();

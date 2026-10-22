@@ -22,6 +22,8 @@
 #ifndef SRC_RESOURCEVIEW_H_
 #define SRC_RESOURCEVIEW_H_
 
+#include <cstdint>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -56,6 +58,18 @@ class FSSResourceView {
   FSSAudioPlayer player;
 
   std::vector<Data::Animation> animation;
+  // animation playback: the phases are shown as the game draws a serf
+  struct SpriteTexture {
+    Data::PSprite sprite;
+    SDL_Texture *texture;
+  };
+  std::map<uint64_t, SpriteTexture> anim_textures;
+  Data::Sprite::Color anim_color;
+  size_t anim_serf_type;
+  bool anim_playing;
+  double anim_position;      // seconds
+  double anim_start_position;
+  uint64_t anim_start_ticks;  // ns
   std::string status;
 
  public:
@@ -69,7 +83,7 @@ class FSSResourceView {
   void draw(Options *options);
   // playing or decoding: the view needs frames
   bool is_playing() const {
-    return player.is_playing() || player.is_decoding();
+    return player.is_playing() || player.is_decoding() || anim_playing;
   }
 
  protected:
@@ -80,7 +94,11 @@ class FSSResourceView {
   void draw_music();
   void draw_player();
   std::string find_soundfont() const;
-  void draw_animation();
+  void draw_animation(Options *options);
+  void draw_zoom_and_color(Options *options);
+  const SpriteTexture *anim_sprite(Data::Resource res, int index,
+                                   bool colored);
+  void clear_anim_textures();
   void save_sprite();
   void save_data();
 };
