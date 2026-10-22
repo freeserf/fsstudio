@@ -1,9 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>icons/Actions-document-save-as-icon.png</file>
-        <file>icons/Actions-draw-brush-icon.png</file>
-        <file>icons/Actions-edit-paste-icon.png</file>
-        <file>icons/Actions-dialog-ok-apply-icon.png</file>
-        <file>icons/Actions-edit-delete-icon.png</file>
-    </qresource>
-</RCC>

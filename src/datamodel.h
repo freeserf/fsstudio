@@ -1,7 +1,7 @@
 /*
  * datamodel.h - FSSDataModel declaration
  *
- * Copyright (C) 2017  Wicked_Digger <wicked_digger@mail.ru>
+ * Copyright (C) 2016-2026  Wicked_Digger <wicked_digger@mail.ru>
  *
  * This file is part of FSStudio.
  *
@@ -22,39 +22,44 @@
 #ifndef SRC_DATAMODEL_H_
 #define SRC_DATAMODEL_H_
 
-#include <QObject>
+#include <string>
+#include <vector>
 
 #include "src/data.h"
 
-class FSSDataModel : public QObject {
-  Q_OBJECT
-
+// Data sources of all known types, created by set_source_path(). A source is
+// kept even when its data could not be loaded, so its path can be fixed.
+class FSSDataModel {
  public:
   enum DataSourceType {
     DataSourceTypeDos,
     DataSourceTypeAmiga,
-    DataSourceTypeCustom
+    DataSourceTypeCustom,
+    DataSourceTypeCount
   };
 
  protected:
-  QList<Data::PSource> data_sources;
+  std::vector<Data::PSource> data_sources;
+  // load() result: Data::Source::is_loaded() is not set by every source type
+  std::vector<bool> loaded;
 
  public:
-  explicit FSSDataModel(QObject *parent = 0);
-  virtual ~FSSDataModel();
+  FSSDataModel();
 
-  size_t dataSourceCount() const { return data_sources.count(); }
-  size_t addDataSource(Data::PSource source);
-  size_t addDataSource(DataSourceType type, const QString &path);
-  Data::PSource getDataSource(size_t index) const;
-  void setDataSource(Data::PSource source, size_t index);
-  static DataSourceType getType(Data::PSource source);
+  size_t source_count() const { return data_sources.size(); }
+  Data::PSource get_source(size_t index) const;
+  bool is_loaded(size_t index) const {
+    return index < loaded.size() && loaded[index];
+  }
+  static const char *get_type_name(DataSourceType type);
+  static bool is_file_source(DataSourceType type) {
+    return type == DataSourceTypeDos;
+  }
 
- protected:
-  void saveSetting(Data::PSource source);
+  // Recreates the source with a new path; returns true if it was loaded.
+  bool set_source_path(DataSourceType type, const std::string &path);
 
- signals:
-  void sourceChanged(size_t index);
+  static std::string default_path(DataSourceType type);
 };
 
 #endif  // SRC_DATAMODEL_H_

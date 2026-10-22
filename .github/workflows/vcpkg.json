@@ -1,7 +1,0 @@
-{
-  "name": "fsstudio",
-  "version-string": "0.1.0",
-  "dependencies": [
-    "qtbase"
-  ]
-}

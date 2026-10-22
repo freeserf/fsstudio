@@ -1,7 +1,7 @@
 /*
- * colorlabel.h - FSSColorLabel declaration
+ * spriteimage.h - sprite image helpers declaration
  *
- * Copyright (C) 2017  Wicked_Digger <wicked_digger@mail.ru>
+ * Copyright (C) 2026  Wicked_Digger <wicked_digger@mail.ru>
  *
  * This file is part of FSStudio.
  *
@@ -19,29 +19,25 @@
  * along with FSStudio.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SRC_COLORLABEL_H_
-#define SRC_COLORLABEL_H_
+#ifndef SRC_SPRITEIMAGE_H_
+#define SRC_SPRITEIMAGE_H_
 
-#include <QLabel>
+#include <string>
 
-class FSSColorLabel : public QLabel {
-  Q_OBJECT
+#include "src/data.h"
 
- protected:
-  QColor cur_color;
+struct SDL_Surface;
 
- public:
-  explicit FSSColorLabel(const QColor& color, QWidget* parent=0);
-  virtual ~FSSColorLabel();
+namespace FSSSpriteImage {
 
-  void setColor(const QColor color);
-  QColor color() const;
+// Sprite pixels are ARGB8888, the returned surface owns a copy of them.
+// The caller destroys it with SDL_DestroySurface().
+SDL_Surface *create_surface(Data::PSprite sprite, unsigned int scale = 1);
 
- signals:
-  void clicked();
+bool save_png(Data::PSprite sprite, const std::string &path,
+              unsigned int scale = 1);
+bool copy_to_clipboard(Data::PSprite sprite);
 
- protected:
-  void mousePressEvent(QMouseEvent* event);
-};
+}  // namespace FSSSpriteImage
 
-#endif  // SRC_COLORLABEL_H_
+#endif  // SRC_SPRITEIMAGE_H_

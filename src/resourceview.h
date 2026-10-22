@@ -1,7 +1,7 @@
 /*
  * resourceview.h - FSSResourceView declaration
  *
- * Copyright (C) 2016  Wicked_Digger <wicked_digger@mail.ru>
+ * Copyright (C) 2016-2026  Wicked_Digger <wicked_digger@mail.ru>
  *
  * This file is part of FSStudio.
  *
@@ -22,45 +22,67 @@
 #ifndef SRC_RESOURCEVIEW_H_
 #define SRC_RESOURCEVIEW_H_
 
-#include <QWidget>
+#include <string>
+#include <vector>
 
+#include "src/audioplayer.h"
 #include "src/data.h"
 
-class QTextBrowser;
-class FSSSpriteView;
-class FSSAudioView;
-class FSSAnimationView;
-class QStackedLayout;
-class QLabel;
-class FSSColorLabel;
+struct SDL_Renderer;
+struct SDL_Texture;
 
-class FSSResourceView : public QWidget {
-  Q_OBJECT
+// Shows one resource of one data source.
+class FSSResourceView {
+ public:
+  // Settings shared by all views.
+  struct Options {
+    Data::Sprite::Color sprite_color;
+    int zoom;
+  };
 
  protected:
-  Data::PSource theSource;
+  SDL_Renderer *renderer;
+  Data::PSource source;
+  bool source_loaded;
+  Data::Resource resource;
+  size_t index;
 
-  QLabel *labelName;
-  QStackedLayout *resourcesStack;
-  QTextBrowser *textBrowser;
-  FSSColorLabel *field_color;
+  Data::PSprite sprite;
+  SDL_Texture *texture;
+  Data::Sprite::Color texture_color;
 
-  FSSSpriteView *viewSprite;
-  FSSAudioView *viewAudio;
-  FSSAnimationView *viewAnimation;
-  QWidget *viewEmpty;
+  PBuffer data;
+  std::string data_ext;
+  FSSAudioPlayer player;
+
+  std::vector<Data::Animation> animation;
+  std::string status;
 
  public:
-  explicit FSSResourceView(Data::PSource source, QWidget *parent = 0);
+  explicit FSSResourceView(SDL_Renderer *renderer);
   virtual ~FSSResourceView();
 
-  Data::PSource source() { return theSource; }
+  void set_source(Data::PSource source, bool loaded);
+  void select(Data::Resource resource, size_t index,
+              const Data::Sprite::Color &color);
+  // Draws the content of the current ImGui window.
+  void draw(Options *options);
+  // playing or decoding: the view needs frames
+  bool is_playing() const {
+    return player.is_playing() || player.is_decoding();
+  }
 
- public slots:
-  void selectResource(Data::Resource resource_class,
-                      unsigned int index);
-  void on_save();
-  void on_copy();
+ protected:
+  void clear();
+  void load_sprite(const Data::Sprite::Color &color);
+  void draw_sprite(Options *options);
+  void draw_sound();
+  void draw_music();
+  void draw_player();
+  std::string find_soundfont() const;
+  void draw_animation();
+  void save_sprite();
+  void save_data();
 };
 
 #endif  // SRC_RESOURCEVIEW_H_

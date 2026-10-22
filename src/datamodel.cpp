@@ -1,7 +1,7 @@
 /*
  * datamodel.cpp - FSSDataModel implementation
  *
- * Copyright (C) 2017  Wicked_Digger <wicked_digger@mail.ru>
+ * Copyright (C) 2016-2026  Wicked_Digger <wicked_digger@mail.ru>
  *
  * This file is part of FSStudio.
  *
@@ -21,117 +21,69 @@
 
 #include "src/datamodel.h"
 
-#include <QSettings>
-#include <QStandardPaths>
+#include <SDL3/SDL.h>
 
-#include "src/data.h"
+#include <memory>
+
 #include "src/data-source-dos.h"
 #include "src/data-source-amiga.h"
 #include "src/data-source-custom.h"
 
-FSSDataModel::FSSDataModel(QObject *parent)
-  : QObject(parent) {
-  QString base_path = QStandardPaths::writableLocation(
-                                                  QStandardPaths::HomeLocation);
-  base_path += "/.local/share/freeserf";
-
-  QSettings settings;
-  settings.sync();
-
-  QString path = settings.value("sources/dos",
-                                base_path + "/spae.pa").toString();
-  addDataSource(DataSourceTypeDos, path);
-
-  path = settings.value("sources/amiga", base_path).toString();
-  addDataSource(DataSourceTypeAmiga, path);
-
-  path = settings.value("sources/custom", base_path + "/custom").toString();
-  addDataSource(DataSourceTypeCustom, path);
-}
-
-FSSDataModel::~FSSDataModel() {
-  for (Data::PSource dataSource : data_sources) {
-    saveSetting(dataSource);
-  }
-}
-
-size_t
-FSSDataModel::addDataSource(Data::PSource source) {
-  size_t index = data_sources.count();
-  data_sources.push_back(source);
-  saveSetting(source);
-  emit sourceChanged(index);
-  return index;
-}
-
-size_t
-FSSDataModel::addDataSource(DataSourceType type, const QString &path) {
-  Data::PSource source;
-
-  switch (type) {
-    case DataSourceTypeDos:
-      source = std::make_shared<DataSourceDOS>(path.toLocal8Bit().data());
-      break;
-    case DataSourceTypeAmiga:
-      source = std::make_shared<DataSourceAmiga>(path.toLocal8Bit().data());
-      break;
-    case DataSourceTypeCustom:
-      source = std::make_shared<DataSourceCustom>(path.toLocal8Bit().data());
-      break;
-  }
-
-  if (source && source->load()) {
-    saveSetting(source);
-    return addDataSource(source);
-  }
-
-  return std::numeric_limits<size_t>::max();
+FSSDataModel::FSSDataModel()
+  : data_sources(DataSourceTypeCount)
+  , loaded(DataSourceTypeCount, false) {
 }
 
 Data::PSource
-FSSDataModel::getDataSource(size_t index) const {
-  if (index >= (size_t)data_sources.count()) {
+FSSDataModel::get_source(size_t index) const {
+  if (index >= data_sources.size()) {
     return nullptr;
   }
   return data_sources[index];
 }
 
-void
-FSSDataModel::setDataSource(Data::PSource source, size_t index) {
-  if (index >= (size_t)data_sources.count()) {
-    return;
+const char *
+FSSDataModel::get_type_name(DataSourceType type) {
+  switch (type) {
+    case DataSourceTypeDos: return "DOS";
+    case DataSourceTypeAmiga: return "Amiga";
+    case DataSourceTypeCustom: return "Custom";
+    default: return "";
   }
-  data_sources[index] = source;
-  saveSetting(source);
-  emit sourceChanged(index);
 }
 
-FSSDataModel::DataSourceType
-FSSDataModel::getType(Data::PSource source) {
-  std::string name = source->get_name();
-
-  if (name == "DOS") {
-    return DataSourceTypeDos;
-  } else if (name == "Amiga") {
-    return DataSourceTypeAmiga;
-  }
-
-  return DataSourceTypeCustom;
-}
-
-void
-FSSDataModel::saveSetting(Data::PSource source) {
-  QSettings settings;
-  switch (getType(source)) {
+bool
+FSSDataModel::set_source_path(DataSourceType type, const std::string &path) {
+  Data::PSource source;
+  switch (type) {
     case DataSourceTypeDos:
-      settings.setValue("sources/dos", source->get_path().c_str());
+      source = std::make_shared<DataSourceDOS>(path);
       break;
     case DataSourceTypeAmiga:
-      settings.setValue("sources/amiga", source->get_path().c_str());
+      source = std::make_shared<DataSourceAmiga>(path);
       break;
     case DataSourceTypeCustom:
-      settings.setValue("sources/custom", source->get_path().c_str());
+      source = std::make_shared<DataSourceCustom>(path);
       break;
+    default:
+      return false;
   }
-  settings.sync();
+
+  data_sources[type] = source;
+  loaded[type] = source->load();
+  return loaded[type];
+}
+
+std::string
+FSSDataModel::default_path(DataSourceType type) {
+  // the home folder path ends with a separator
+  const char *home = SDL_GetUserFolder(SDL_FOLDER_HOME);
+  std::string base_path = home != nullptr ? home : "";
+  base_path += ".local/share/freeserf";
+
+  switch (type) {
+    case DataSourceTypeDos: return base_path + "/spae.pa";
+    case DataSourceTypeCustom: return base_path + "/custom";
+    default: return base_path;
+  }
 }
