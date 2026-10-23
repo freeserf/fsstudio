@@ -20,13 +20,9 @@ jobs:
         with:
           submodules: 'recursive'
 
-      - name: Install dependencies
-        run: |
-          brew install qt6
-
       - name: Configure FSStudio
         run: |
-          cmake -B build -G "Unix Makefiles"
+          cmake -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DFSSTUDIO_VENDORED_SDL=ON
 
       - name: Build FSStudio
         run: |

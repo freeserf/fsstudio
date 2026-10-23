@@ -1,7 +1,7 @@
 /*
  * exporter.h - FSSExporter declaration
  *
- * Copyright (C) 2017  Wicked_Digger <wicked_digger@mail.ru>
+ * Copyright (C) 2016-2026  Wicked_Digger <wicked_digger@mail.ru>
  *
  * This file is part of FSStudio.
  *
@@ -22,33 +22,30 @@
 #ifndef SRC_EXPORTER_H_
 #define SRC_EXPORTER_H_
 
-#include <QObject>
-#include <QDir>
-#include <QColor>
+#include <string>
 
 #include "src/data.h"
 
-class FSSExporter : public QObject {
-  Q_OBJECT
-
+// Exports a data source to the Freeserf custom data format.
+class FSSExporter {
  protected:
   Data::PSource source;
-  QString path;
-  int scale;
-  QDir dir;
+  std::string path;
+  unsigned int scale;
   std::string name;
 
  public:
-  FSSExporter(Data::PSource source, QString path, unsigned int scale = 1);
-  virtual ~FSSExporter();
+  FSSExporter(Data::PSource source, const std::string &path,
+              unsigned int scale = 1);
 
   void set_name(const std::string &_name) { name = _name; }
   bool do_export();
 
  protected:
-  void exportResourceData(Data::Resource res, QString ext);
-  void exportResourceSprite(Data::Resource res);
-  void exportResourceAnimation(Data::Resource res);
+  void export_resource_data(Data::Resource res);
+  void export_resource_sprite(Data::Resource res);
+  void export_resource_animation(Data::Resource res);
+  std::string resource_dir(Data::Resource res) const;
 };
 
 #endif  // SRC_EXPORTER_H_

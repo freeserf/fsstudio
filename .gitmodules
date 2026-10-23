@@ -1,3 +1,6 @@
 [submodule "freeserf"]
 	path = freeserf
 	url = https://github.com/freeserf/freeserf.git
+[submodule "imgui"]
+	path = imgui
+	url = https://github.com/ocornut/imgui.git

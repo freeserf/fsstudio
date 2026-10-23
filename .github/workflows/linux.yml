@@ -23,13 +23,16 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libglx-dev libgl1-mesa-dev
-          sudo apt-get install -y qt6-base-dev
-          sudo apt-get install -y libqt6opengl6-dev
+          # SDL3 is not packaged in Ubuntu 22.04, it is built from source
+          sudo apt-get install -y libasound2-dev libpulse-dev \
+            libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxfixes-dev \
+            libxi-dev libxss-dev libxtst-dev libxkbcommon-dev libdrm-dev libgbm-dev \
+            libgl1-mesa-dev libegl1-mesa-dev libdbus-1-dev libudev-dev \
+            libwayland-dev wayland-protocols
 
       - name: Configure FSStudio
         run: |
-          cmake -B build -G "Unix Makefiles"
+          cmake -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=${{ matrix.buildtype }} -DFSSTUDIO_VENDORED_SDL=ON
 
       - name: Build FSStudio
         run: |
@@ -45,4 +48,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: FSStudio-${{ matrix.buildtype }}
-          path: ./build/FSStudio-0.1.0-Linux.tar.*
+          path: ./build/FSStudio-*-Linux.tar.*

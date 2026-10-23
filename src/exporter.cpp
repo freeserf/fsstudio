@@ -1,7 +1,7 @@
 /*
  * exporter.cpp - FSSExporter implementation
  *
- * Copyright (C) 2017  Wicked_Digger <wicked_digger@mail.ru>
+ * Copyright (C) 2016-2026  Wicked_Digger <wicked_digger@mail.ru>
  *
  * This file is part of FSStudio.
  *
@@ -21,176 +21,157 @@
 
 #include "src/exporter.h"
 
-#include <QSettings>
-#include <QImage>
+#include <filesystem>
+#include <iomanip>
+#include <sstream>
+#include <tuple>
 
-#include "src/data-source.h"
 #include "src/buffer.h"
+#include "src/configfile.h"
+#include "src/data-source.h"
+#include "src/spriteimage.h"
 
-FSSExporter::FSSExporter(Data::PSource _source, QString _path,
-                         unsigned int _scale) {
-  source = _source;
-  path = _path;
-  scale = _scale;
-  name = "Unnamed";
+namespace {
+
+std::string
+index_name(size_t index) {
+  std::stringstream stream;
+  stream << std::setfill('0') << std::setw(3) << index;
+  return stream.str();
 }
 
-FSSExporter::~FSSExporter() {
+}  // namespace
+
+FSSExporter::FSSExporter(Data::PSource _source, const std::string &_path,
+                         unsigned int _scale)
+  : source(_source)
+  , path(_path)
+  , scale(_scale)
+  , name("Unnamed") {
 }
 
 bool
 FSSExporter::do_export() {
-  dir = QDir(path);
-  if (!dir.exists()) {
+  std::error_code error;
+  if (!source || !std::filesystem::is_directory(path, error)) {
     return false;
   }
 
-  QSettings meta_file(path + "/meta.ini", QSettings::IniFormat);
+  ConfigFile meta;
+  meta.set_value("general", "scale", scale);
+  meta.set_value("general", "name", name);
 
-  meta_file.setValue("scale", QString::number(scale));
-  meta_file.setValue("name", name.c_str());
-
-  for (size_t r = Data::AssetArtLandscape; r <= Data::AssetCursor; r++) {
+  for (size_t r = Data::AssetExtroBg; r <= Data::AssetStar; r++) {
     Data::Resource res = static_cast<Data::Resource>(r);
     switch (Data::get_resource_type(res)) {
-      case Data::TypeSprite: {
-        exportResourceSprite(res);
+      case Data::TypeSprite:
+        export_resource_sprite(res);
         break;
-      }
-      case Data::TypeAnimation: {
-        exportResourceAnimation(res);
+      case Data::TypeAnimation:
+        export_resource_animation(res);
         break;
-      }
-      case Data::TypeSound: {
-        exportResourceData(res, "wav");
+      case Data::TypeSound:
+      case Data::TypeMusic:
+        export_resource_data(res);
         break;
-      }
-      case Data::TypeMusic: {
-        exportResourceData(res, "mid");
+      default:
         break;
-      }
-      default: {
-        break;
-      }
     }
-    meta_file.setValue(QString("resources/")
-                       + Data::get_resource_name(res).c_str(),
-                       Data::get_resource_name(res).c_str());
+    std::string res_name = Data::get_resource_name(res);
+    meta.set_value("resources", res_name, res_name);
   }
 
-  return true;
+  return meta.save(path + "/meta.ini");
+}
+
+std::string
+FSSExporter::resource_dir(Data::Resource res) const {
+  std::string dir = path + "/" + Data::get_resource_name(res);
+  std::error_code error;
+  std::filesystem::create_directories(dir, error);
+  return dir;
 }
 
 void
-FSSExporter::exportResourceData(Data::Resource res, QString ext) {
-  QString res_name = Data::get_resource_name(res).c_str();
-  dir.mkdir(res_name);
-  QString path = dir.path() + "/" + res_name;
-  QSettings meta_file(path + "/meta.ini", QSettings::IniFormat);
+FSSExporter::export_resource_data(Data::Resource res) {
+  std::string dir = resource_dir(res);
+  ConfigFile meta;
+
+  std::string ext = "wav";
+  if (res == Data::AssetMusic) {
+    ext = (source->get_music_format() == Data::MusicFormatMod) ? "mod" : "mid";
+  }
+
   for (size_t i = 0; i < Data::get_resource_count(res); i++) {
-    PBuffer data;
-    if (res == Data::AssetSound) {
-      data = source->get_sound(i);
-      ext = "wav";
-    } else if (res == Data::AssetMusic) {
-      data = source->get_music(i);
-      ext = "mid";
+    PBuffer data = (res == Data::AssetSound) ? source->get_sound(i)
+                                             : source->get_music(i);
+    if (!data) {
+      continue;
     }
-    if (data != nullptr) {
-      QString file_name;
-      file_name.asprintf("%03zu", i);
-      QString file_path = res_name + "/" + file_name + "." + ext;
-      QFile file(dir.path() + "/" + file_path);
-      if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        file.write(static_cast<char*>(data->get_data()),
-                   static_cast<qint64>(data->get_size()));
-        file.close();
-      }
-      meta_file.setValue(file_name + "/path", file_name + "." + ext);
+    std::string file_name = index_name(i) + "." + ext;
+    if (data->write(dir + "/" + file_name)) {
+      meta.set_value(index_name(i), "path", file_name);
     }
   }
+
+  meta.save(dir + "/meta.ini");
 }
 
 void
-FSSExporter::exportResourceSprite(Data::Resource res) {
-  QString res_name = Data::get_resource_name(res).c_str();
-  dir.mkdir(res_name);
-  QString path = dir.path() + "/" + res_name;
-  QSettings meta_file(path + "/meta.ini", QSettings::IniFormat);
+FSSExporter::export_resource_sprite(Data::Resource res) {
+  std::string dir = resource_dir(res);
+  ConfigFile meta;
 
   for (size_t i = 0; i < Data::get_resource_count(res); i++) {
-    QString file_name;
-    file_name.asprintf("%03zu", i);
-    Data::MaskImage pair = source->get_sprite_parts(res, i);
-    bool meta_saved = false;
-    if (std::get<0>(pair)) {
-      Data::PSprite mask = std::get<0>(pair);
-      QImage image(reinterpret_cast<uchar*>(mask->get_data()),
-                   (int)mask->get_width(),
-                   (int)mask->get_height(),
-                   QImage::Format_ARGB32);
-      if (scale != 1) {
-        image = image.scaled(image.width() * scale, image.height() * scale);
-      }
-      image.save(path + "/" + file_name + "m.png", "png");
-      meta_file.setValue(file_name + "/mask_path", file_name + "m.png");
-      meta_file.setValue(file_name + "/delta_x",
-                         (int)(mask->get_delta_x() * scale));
-      meta_file.setValue(file_name + "/delta_y",
-                         (int)(mask->get_delta_y() * scale));
-      meta_file.setValue(file_name + "/offset_x",
-                         (int)(mask->get_offset_x() * scale));
-      meta_file.setValue(file_name + "/offset_y",
-                         (int)(mask->get_offset_y() * scale));
-      meta_saved = true;
+    std::string section = index_name(i);
+    Data::PSprite mask, image;
+    std::tie(mask, image) = source->get_sprite_parts(res, i);
+
+    if (mask && FSSSpriteImage::save_png(mask, dir + "/" + section + "m.png",
+                                         scale)) {
+      meta.set_value(section, "mask_path", section + "m.png");
+    }
+    if (image && FSSSpriteImage::save_png(image, dir + "/" + section + ".png",
+                                          scale)) {
+      meta.set_value(section, "image_path", section + ".png");
     }
 
-    if (std::get<1>(pair)) {
-      Data::PSprite front = std::get<1>(pair);
-      QImage image(reinterpret_cast<uchar*>(front->get_data()),
-                   (int)front->get_width(), (int)front->get_height(),
-                   QImage::Format_ARGB32);
-      if (scale != 1.) {
-        image = image.scaled(image.width() * scale, image.height() * scale);
-      }
-      image.save(path + "/" + file_name + ".png", "png");
-      meta_file.setValue(file_name + "/image_path", file_name + ".png");
-      if (!meta_saved) {
-        meta_file.setValue(file_name + "/delta_x",
-                           (int)(front->get_delta_x() * scale));
-        meta_file.setValue(file_name + "/delta_y",
-                           (int)(front->get_delta_y() * scale));
-        meta_file.setValue(file_name + "/offset_x",
-                           (int)(front->get_offset_x() * scale));
-        meta_file.setValue(file_name + "/offset_y",
-                           (int)(front->get_offset_y() * scale));
-      }
+    // geometry is taken from the mask when the sprite has one
+    Data::PSprite sprite = mask ? mask : image;
+    if (sprite) {
+      int s = static_cast<int>(scale);
+      meta.set_value(section, "delta_x", sprite->get_delta_x() * s);
+      meta.set_value(section, "delta_y", sprite->get_delta_y() * s);
+      meta.set_value(section, "offset_x", sprite->get_offset_x() * s);
+      meta.set_value(section, "offset_y", sprite->get_offset_y() * s);
     }
   }
+
+  meta.save(dir + "/meta.ini");
 }
 
 void
-FSSExporter::exportResourceAnimation(Data::Resource res) {
-  QString res_name = Data::get_resource_name(res).c_str();
-  dir.mkdir(res_name);
-  QString path = dir.path() + "/" + res_name;
-  QSettings meta_file(path + "/meta.ini", QSettings::IniFormat);
+FSSExporter::export_resource_animation(Data::Resource res) {
+  std::string dir = resource_dir(res);
+  ConfigFile meta;
 
   for (size_t i = 0; i < Data::get_resource_count(res); i++) {
-    QString file_name;
-    file_name.asprintf("%03zu", i);
-    meta_file.setValue(file_name + "/path", file_name + ".ini");
-    QSettings data_file(path + "/" + file_name + ".ini", QSettings::IniFormat);
+    std::string file_name = index_name(i) + ".ini";
+    meta.set_value(index_name(i), "path", file_name);
 
+    ConfigFile data;
     size_t count = source->get_animation_phase_count(i);
-    data_file.setValue("count", (unsigned int)count);
+    data.set_value("general", "count", count);
     for (size_t j = 0; j < count; j++) {
-      Data::Animation animation = source->get_animation(i, j);
-      QString phase_name;
-      phase_name.asprintf("%03zu", j);
-      data_file.setValue(phase_name + "/sprite", animation.sprite);
-      data_file.setValue(phase_name + "/x", animation.x * (int)scale);
-      data_file.setValue(phase_name + "/y", animation.y * (int)scale);
+      // phases are addressed in 1/8 steps
+      Data::Animation animation = source->get_animation(i, j << 3);
+      std::string phase = index_name(j);
+      data.set_value(phase, "sprite", static_cast<int>(animation.sprite));
+      data.set_value(phase, "x", animation.x * static_cast<int>(scale));
+      data.set_value(phase, "y", animation.y * static_cast<int>(scale));
     }
+    data.save(dir + "/" + file_name);
   }
+
+  meta.save(dir + "/meta.ini");
 }
